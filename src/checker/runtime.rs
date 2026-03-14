@@ -417,7 +417,11 @@ impl Runtime {
         // Unhandled event in current state
         debug!("unhandled event '{}' in machine {}[{}] state={}",
             event_name, machine_name, id, current_state);
-        // In P, unhandled events that are not ignored or deferred cause a runtime error
+        // Spec monitors silently drop unhandled events (they're passive observers)
+        if self.instances[id].is_spec {
+            return Ok(());
+        }
+        // For regular machines, unhandled events cause a runtime error
         Err(CheckError {
             message: format!(
                 "unhandled event '{}' in state '{}' of machine '{}'",
@@ -800,7 +804,7 @@ impl Runtime {
                 };
 
                 // Announce to monitors
-                self.announce_event(&event_name, &payload);
+                self.announce_event(&event_name, &payload)?;
 
                 Ok(HandlerOutcome::Raised(event_name, payload))
             }
@@ -827,7 +831,10 @@ impl Runtime {
                 };
 
                 // Announce to monitors
-                self.announce_event(&event_name, &payload);
+                self.announce_event(&event_name, &payload)?;
+
+                // Announce to spec monitors (monitors see all sent events)
+                self.announce_event(&event_name, &payload)?;
 
                 // Enqueue on target
                 if target_id < self.instances.len() && !self.instances[target_id].halted {
@@ -846,7 +853,7 @@ impl Runtime {
                     if vals.len() == 1 { Some(vals.into_iter().next().unwrap()) }
                     else { Some(PValue::Tuple(vals)) }
                 } else { None };
-                self.announce_event(&event_name, &payload);
+                self.announce_event(&event_name, &payload)?;
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::Goto { state, payload, .. } => {
@@ -971,7 +978,7 @@ impl Runtime {
         Ok(())
     }
 
-    fn announce_event(&mut self, event_name: &str, payload: &Option<PValue>) {
+    fn announce_event(&mut self, event_name: &str, payload: &Option<PValue>) -> Result<(), CheckError> {
         // Deliver event to all spec monitors that observe it
         let spec_ids: Vec<usize> = self.instances.iter().enumerate()
             .filter(|(_, inst)| inst.is_spec && !inst.halted)
@@ -993,8 +1000,9 @@ impl Runtime {
             self.instances[spec_id].event_queue.push_back((event_name.to_string(), payload.clone()));
 
             // Process immediately (monitors are synchronous)
-            let _ = self.step_machine(spec_id);
+            self.step_machine(spec_id)?;
         }
+        Ok(())
     }
 
     // ---- Expression evaluation ----
@@ -1184,31 +1192,59 @@ impl Runtime {
                 self.eval_binop(*op, &l, &r)
             }
 
-            Expr::Cast(inner, _ty, _) => {
+            Expr::Cast(inner, ty, _) => {
                 let val = self.eval_expr(id, machine, inner, env)?;
-                // For now, just pass through — runtime casts are handled by coercion
+                let target_name = match ty {
+                    PType::Named(n) => Some(n.as_str()),
+                    _ => None,
+                };
                 match val {
-                    PValue::Int(i) => Ok(PValue::Int(i)), // int to float handled below
+                    PValue::Int(i) => {
+                        // int to float coercion
+                        match ty {
+                            PType::Float => Ok(PValue::Float(OrderedFloat(i as f64))),
+                            _ => Ok(PValue::Int(i)),
+                        }
+                    }
                     PValue::Float(f) => Ok(PValue::Int(f.0 as i64)),
                     PValue::EnumVal(_, ref elem) => {
-                        // enum to int: use declared value if available, else index
-                        if let Some(enum_name) = self.enum_elements.get(elem) {
-                            // Check for numbered enum values
-                            let machines_copy: Vec<_> = self.machines.keys().cloned().collect();
-                            let _ = machines_copy;
-                            // Look through all programs' enum declarations for numbered values
-                            if let Some(elems) = self.enums.get(enum_name) {
-                                let idx = elems.iter().position(|e| e == elem).unwrap_or(0);
-                                // Check if enum has declared values
-                                if let Some(val) = self.enum_values.get(elem) {
-                                    return Ok(PValue::Int(*val));
+                        // Check if casting to int
+                        if matches!(ty, PType::Int) {
+                            if let Some(val) = self.enum_values.get(elem) {
+                                return Ok(PValue::Int(*val));
+                            }
+                            if let Some(enum_name) = self.enum_elements.get(elem) {
+                                if let Some(elems) = self.enums.get(enum_name) {
+                                    let idx = elems.iter().position(|e| e == elem).unwrap_or(0);
+                                    return Ok(PValue::Int(idx as i64));
                                 }
-                                return Ok(PValue::Int(idx as i64));
                             }
                         }
                         Ok(val)
                     }
-                    other => Ok(other),
+                    PValue::MachineRef(_) => Ok(val), // machine cast is always ok
+                    PValue::Null => Ok(val),
+                    // For 'as' casts on non-primitive values: runtime type check
+                    ref other => {
+                        // If casting to an enum type, check the value is actually that enum
+                        if let Some(tname) = target_name {
+                            if self.enums.contains_key(tname) {
+                                // Value must be an enum of the target type
+                                if let PValue::EnumVal(ename, _) = other {
+                                    if ename != tname {
+                                        return Err(CheckError {
+                                            message: format!("invalid cast: value of type {ename} cannot be cast to {tname}"),
+                                        });
+                                    }
+                                } else {
+                                    return Err(CheckError {
+                                        message: format!("invalid cast: cannot cast {other} to enum type {tname}"),
+                                    });
+                                }
+                            }
+                        }
+                        Ok(val)
+                    }
                 }
             }
 
