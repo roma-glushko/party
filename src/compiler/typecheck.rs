@@ -118,6 +118,13 @@ impl<'a> TypeChecker<'a> {
             }
         }
 
+        // Phase 1b: Check for duplicate fields in named tuple types
+        for prog in programs {
+            for decl in &prog.decls {
+                self.check_named_tuple_fields(decl);
+            }
+        }
+
         // Phase 2: Resolve type references in declarations
         self.resolve_typedefs();
 
@@ -481,6 +488,28 @@ impl<'a> TypeChecker<'a> {
         }
     }
 
+    fn check_named_tuple_fields(&mut self, decl: &TopDecl) {
+        match decl {
+            TopDecl::MachineDecl(m) | TopDecl::SpecMachineDecl(m) => {
+                for var in &m.body.vars {
+                    self.check_type_for_dup_fields(&var.ty, var.span);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn check_type_for_dup_fields(&mut self, ty: &PType, span: Span) {
+        if let PType::NamedTuple(fields) = ty {
+            let mut seen = HashSet::new();
+            for (name, _) in fields {
+                if !seen.insert(name.clone()) {
+                    self.err(format!("duplicate field name '{name}' in named tuple"), span);
+                }
+            }
+        }
+    }
+
     fn resolve_typedefs(&mut self) {
         // Check for circular typedefs
         for name in self.typedefs.keys().cloned().collect::<Vec<_>>() {
@@ -833,6 +862,13 @@ impl<'a> TypeChecker<'a> {
                 }
             }
             Stmt::Assign { lvalue, rvalue, span } => {
+                // Check for set indexed assignment (not allowed)
+                if let LValue::Index(base, _, _) = lvalue {
+                    let base_ty = self.infer_lvalue_type(base, ctx, locals);
+                    if matches!(base_ty.canonicalize(), PResolvedType::Set(_)) {
+                        self.err("sets do not support indexed assignment", *span);
+                    }
+                }
                 let lhs_ty = self.infer_lvalue_type(lvalue, ctx, locals);
                 let rhs_ty = self.infer_expr_type(rvalue, ctx, locals);
                 // Check for function-returning-nothing used in assignment
@@ -933,8 +969,9 @@ impl<'a> TypeChecker<'a> {
                 if ctx.is_spec {
                     self.err("spec machine cannot create machines", *span);
                 }
+                let mut arg_types = Vec::new();
                 for arg in args {
-                    self.infer_expr_type(arg, ctx, locals);
+                    arg_types.push(self.infer_expr_type(arg, ctx, locals));
                 }
                 // Check interface exists
                 if !self.interfaces.contains_key(interface) && !self.machines.contains_key(interface) {
@@ -944,6 +981,24 @@ impl<'a> TypeChecker<'a> {
                 if let Some(m) = self.machines.get(interface) {
                     if m.is_spec {
                         self.err(format!("cannot create spec machine '{interface}'"), *span);
+                    }
+                }
+                // Check payload matches machine entry parameter
+                if let Some(expected_payload) = self.interfaces.get(interface).and_then(|p| p.clone()) {
+                    let actual = match arg_types.len() {
+                        0 => {
+                            self.err(format!("machine '{interface}' requires a payload of type {expected_payload}"), *span);
+                            return;
+                        }
+                        1 => arg_types[0].clone(),
+                        _ => PResolvedType::Tuple(arg_types),
+                    };
+                    if actual != PResolvedType::Any && actual != PResolvedType::Void
+                        && !expected_payload.is_assignable_from(&actual)
+                    {
+                        self.err(format!(
+                            "machine '{interface}' expects payload {expected_payload}, got {actual}"
+                        ), *span);
                     }
                 }
             }
@@ -959,10 +1014,15 @@ impl<'a> TypeChecker<'a> {
                 if ctx.is_exit {
                     self.err("cannot raise event in exit handler", *span);
                 }
-                let ev_ty = self.infer_expr_type(event, ctx, locals);
-                if ev_ty != PResolvedType::Event && ev_ty != PResolvedType::Any && ev_ty != PResolvedType::Void {
-                    if !matches!(event, Expr::Iden(name, _) if self.events.contains_key(name) || self.enum_elements.contains_key(name) || name == "halt") {
-                        self.err("raise requires an event expression", *span);
+                let _ev_ty = self.infer_expr_type(event, ctx, locals);
+                // Check payload matches event declaration
+                if let Expr::Iden(name, _) = event {
+                    if let Some(ev_info) = self.events.get(name) {
+                        if ev_info.payload.is_some() && args.is_empty() {
+                            self.err(format!(
+                                "event '{name}' requires a payload but raise provides none"
+                            ), *span);
+                        }
                     }
                 }
                 for arg in args {
@@ -996,14 +1056,25 @@ impl<'a> TypeChecker<'a> {
                 if ctx.is_exit {
                     self.err("cannot use goto in exit handler", *span);
                 }
-                // Validate state exists
+                // Validate state exists and check payload
                 if let Some(machine_name) = &ctx.machine {
-                    if let Some(machine) = self.machines.get(machine_name) {
+                    let machine_info = self.machines.get(machine_name).cloned();
+                    if let Some(machine) = machine_info {
                         if !machine.states.contains(state) {
                             self.err(
                                 format!("undefined state '{state}' in machine '{machine_name}'"),
                                 *span,
                             );
+                        }
+                        // Check payload matches target state's entry parameter
+                        if let Some(sh) = machine.state_handlers.get(state) {
+                            if let Some(ref expected) = sh.entry_param_type {
+                                if payload.is_empty() {
+                                    self.err(format!(
+                                        "goto '{state}' requires payload of type {expected}"
+                                    ), *span);
+                                }
+                            }
                         }
                     }
                 }
@@ -1078,7 +1149,14 @@ impl<'a> TypeChecker<'a> {
                 let types: Vec<_> = fields.iter().map(|f| self.infer_expr_type(f, ctx, locals)).collect();
                 PResolvedType::Tuple(types)
             }
-            Expr::NamedTuple(fields, _) => {
+            Expr::NamedTuple(fields, span) => {
+                // Check for duplicate field names
+                let mut seen = HashSet::new();
+                for (name, _) in fields {
+                    if !seen.insert(name.clone()) {
+                        self.err(format!("duplicate field name '{name}' in named tuple expression"), *span);
+                    }
+                }
                 let types: Vec<_> = fields
                     .iter()
                     .map(|(n, f)| (n.clone(), self.infer_expr_type(f, ctx, locals)))
@@ -1231,9 +1309,16 @@ impl<'a> TypeChecker<'a> {
                 self.check_binop(*op, &lt, &rt, *span)
             }
 
-            Expr::Cast(inner, ty, _) => {
-                self.infer_expr_type(inner, ctx, locals);
-                self.resolve_type(ty)
+            Expr::Cast(inner, ty, span) => {
+                let inner_ty = self.infer_expr_type(inner, ctx, locals);
+                let target_ty = self.resolve_type(ty);
+                // Check for invalid null casts
+                if inner_ty == PResolvedType::Null {
+                    if matches!(target_ty, PResolvedType::Int | PResolvedType::Bool | PResolvedType::Float | PResolvedType::String) {
+                        self.err(format!("cannot cast null to {target_ty}"), *span);
+                    }
+                }
+                target_ty
             }
 
             Expr::Choose(arg, _) => {
