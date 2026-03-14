@@ -331,6 +331,33 @@ impl<'a> TypeChecker<'a> {
             }
         }
 
+        // Check for duplicate entry/exit declarations
+        let mut entry_count = 0;
+        let mut exit_count = 0;
+        for item in &state.items {
+            match item {
+                StateBodyItem::Entry(_) => {
+                    entry_count += 1;
+                    if entry_count > 1 {
+                        self.err(
+                            format!("duplicate entry handler in state '{}' of machine '{machine}'", state.name),
+                            state.span,
+                        );
+                    }
+                }
+                StateBodyItem::Exit(_) => {
+                    exit_count += 1;
+                    if exit_count > 1 {
+                        self.err(
+                            format!("duplicate exit handler in state '{}' of machine '{machine}'", state.name),
+                            state.span,
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
         // Check for conflicts
         let mut handled_events: HashSet<String> = HashSet::new();
         for (event, _) in &info.handlers {
@@ -361,7 +388,7 @@ impl<'a> TypeChecker<'a> {
         info
     }
 
-    fn register_function(&mut self, f: &FunDecl, _machine: Option<&str>) {
+    fn register_function(&mut self, f: &FunDecl, machine: Option<&str>) {
         let params: Vec<(String, PResolvedType)> = f
             .params
             .iter()
@@ -377,6 +404,15 @@ impl<'a> TypeChecker<'a> {
         }
 
         let ret_type = f.ret_type.as_ref().map(|t| self.resolve_type(t));
+
+        // Check for duplicate function definitions
+        if self.functions.contains_key(&f.name) {
+            if let Some(m) = machine {
+                self.err(format!("duplicate function '{}' in machine '{m}'", f.name), f.span);
+            } else {
+                self.err(format!("duplicate function '{}'", f.name), f.span);
+            }
+        }
 
         self.functions.insert(
             f.name.clone(),
@@ -785,6 +821,19 @@ impl<'a> TypeChecker<'a> {
             Stmt::Assign { lvalue, rvalue, span } => {
                 let lhs_ty = self.infer_lvalue_type(lvalue, ctx, locals);
                 let rhs_ty = self.infer_expr_type(rvalue, ctx, locals);
+                // Check for function-returning-nothing used in assignment
+                if rhs_ty == PResolvedType::Void {
+                    if let Expr::FunCall(name, _, _) = rvalue {
+                        if let Some(fi) = self.functions.get(name) {
+                            if fi.ret_type.is_none() {
+                                self.err(
+                                    format!("function '{name}' does not return a value"),
+                                    *span,
+                                );
+                            }
+                        }
+                    }
+                }
                 if lhs_ty != PResolvedType::Void
                     && rhs_ty != PResolvedType::Void
                     && lhs_ty != PResolvedType::Any
@@ -833,14 +882,18 @@ impl<'a> TypeChecker<'a> {
                 };
                 self.check_stmt(body, &loop_ctx, locals);
             }
-            Stmt::Foreach { item, collection, body, .. } => {
+            Stmt::Foreach { item, collection, body, span, .. } => {
                 let col_ty = self.infer_expr_type(collection, ctx, locals);
                 // Infer iterator type from collection element type
                 let elem_ty = match col_ty.canonicalize() {
                     PResolvedType::Seq(elem) => *elem,
                     PResolvedType::Set(elem) => *elem,
                     PResolvedType::Map(key, _) => *key,
-                    _ => PResolvedType::Any,
+                    PResolvedType::Any => PResolvedType::Any,
+                    other => {
+                        self.err(format!("foreach requires a collection (seq, set, or map), got {other}"), *span);
+                        PResolvedType::Any
+                    }
                 };
                 locals.insert(item.clone(), elem_ty);
                 let loop_ctx = FnContext {
@@ -873,6 +926,12 @@ impl<'a> TypeChecker<'a> {
                 if !self.interfaces.contains_key(interface) && !self.machines.contains_key(interface) {
                     self.err(format!("unknown machine/interface '{interface}'"), *span);
                 }
+                // Cannot create spec machines
+                if let Some(m) = self.machines.get(interface) {
+                    if m.is_spec {
+                        self.err(format!("cannot create spec machine '{interface}'"), *span);
+                    }
+                }
             }
             Stmt::FunCall { name, args, span } => {
                 for arg in args {
@@ -899,6 +958,10 @@ impl<'a> TypeChecker<'a> {
             Stmt::Send { target, event, args, span } => {
                 if ctx.is_spec {
                     self.err("spec machine cannot send events", *span);
+                }
+                // Check for sending null event
+                if matches!(event, Expr::NullLit(_)) || matches!(event, Expr::Iden(n, _) if n == "null") {
+                    self.err("cannot send the null event", *span);
                 }
                 self.infer_expr_type(target, ctx, locals);
                 self.infer_expr_type(event, ctx, locals);
@@ -1081,6 +1144,12 @@ impl<'a> TypeChecker<'a> {
             Expr::New(interface, args, span) => {
                 if ctx.is_spec {
                     self.err("spec machine cannot create machines", *span);
+                }
+                // Cannot create spec machines
+                if let Some(m) = self.machines.get(interface) {
+                    if m.is_spec {
+                        self.err(format!("cannot create spec machine '{interface}'"), *span);
+                    }
                 }
                 for arg in args {
                     self.infer_expr_type(arg, ctx, locals);
