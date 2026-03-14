@@ -41,6 +41,9 @@ struct MachineInstance {
     event_queue: VecDeque<(String, Option<PValue>)>,
     halted: bool,
     is_spec: bool,
+    /// Liveness temperature: increments each step while in a hot state,
+    /// resets to 0 on transition to a cold state.
+    liveness_temperature: usize,
 }
 
 /// The P program runtime.
@@ -67,6 +70,16 @@ pub struct Runtime {
     steps: usize,
     /// Max steps per iteration.
     max_steps: usize,
+    /// Liveness temperature threshold: if a spec monitor stays in a hot
+    /// state for this many scheduling steps without visiting a cold state,
+    /// a liveness violation is reported. Mirrors PChecker's temperature system.
+    liveness_temperature_threshold: usize,
+    /// Counter for fair nondeterministic choices ($$).
+    /// Alternates to ensure both branches are explored.
+    fair_nondet_counter: usize,
+    /// Bias for unfair nondeterministic choices ($).
+    /// None = random, Some(true) = always true, Some(false) = always false.
+    nondet_bias: Option<bool>,
 }
 
 impl Runtime {
@@ -83,6 +96,9 @@ impl Runtime {
             rng: rand::rng(),
             steps: 0,
             max_steps: 2000,
+            liveness_temperature_threshold: 100,
+            fair_nondet_counter: 0,
+            nondet_bias: None,
         };
 
         // Register all declarations
@@ -119,6 +135,11 @@ impl Runtime {
         }
 
         rt
+    }
+
+    /// Set the bias for unfair nondeterministic choices ($).
+    pub fn set_nondet_bias(&mut self, bias: Option<bool>) {
+        self.nondet_bias = bias;
     }
 
     /// Run the model checker. Returns Ok if no violations found, Err with description if found.
@@ -174,14 +195,19 @@ impl Runtime {
 
             self.step_machine(idx)?;
             self.steps += 1;
+
+            // Check liveness temperature after each scheduling step
+            self.check_liveness_temperature()?;
         }
 
-        // Check liveness: only flag if we hit the step limit (indicating the system
-        // might be stuck in a hot state forever). Don't flag on natural termination
-        // because the system might just not have had time to reach a cold state.
-        if self.steps >= self.max_steps {
+        // End-of-run: the temperature-based system handles liveness checking
+        // continuously during execution. No additional check needed here.
+        // The temperature threshold prevents false positives on programs
+        // that cycle through hot states but always eventually reach cold states.
+        if false {
+            // Placeholder to keep the code structure for future enhancements
             for inst in &self.instances {
-                if inst.is_spec {
+                if inst.is_spec && inst.liveness_temperature > 0 {
                     let machine = self.machines.get(&inst.machine_name).unwrap();
                     for state in &machine.body.states {
                         if state.name == inst.current_state && state.temperature == Some(Temperature::Hot) {
@@ -239,6 +265,7 @@ impl Runtime {
             event_queue: VecDeque::new(),
             halted: false,
             is_spec: machine.is_spec,
+            liveness_temperature: 0,
         });
 
         // Run the start state's entry handler
@@ -395,6 +422,18 @@ impl Runtime {
         self.instances[id].current_state = target.to_string();
         let machine_name = self.instances[id].machine_name.clone();
         let machine = self.machines.get(&machine_name).unwrap().clone();
+
+        // Reset liveness temperature on entry to cold state (spec monitors)
+        if self.instances[id].is_spec {
+            let target_state = machine.body.states.iter().find(|s| s.name == target);
+            if let Some(state) = target_state {
+                if state.temperature == Some(Temperature::Cold) {
+                    trace!("liveness: spec '{}' entered cold state '{}', temperature reset",
+                        machine_name, target);
+                    self.instances[id].liveness_temperature = 0;
+                }
+            }
+        }
         let state = machine.body.states.iter()
             .find(|s| s.name == *target)
             .unwrap()
@@ -792,6 +831,67 @@ impl Runtime {
         }
     }
 
+    /// Check liveness temperature for all spec monitors.
+    /// Called after each scheduling step. If a monitor has been in a hot state
+    /// for too many steps without visiting a cold state, report a violation.
+    fn check_liveness_temperature(&mut self) -> Result<(), CheckError> {
+        for inst in &mut self.instances {
+            if !inst.is_spec || inst.halted {
+                continue;
+            }
+            // Look up the current state's temperature in the machine declaration
+            // We need to find the state declaration to check its temperature attribute
+        }
+
+        // We need machine declarations to check state temperatures.
+        // Collect spec instance info first, then check against machine declarations.
+        let spec_states: Vec<(usize, String, String)> = self.instances.iter().enumerate()
+            .filter(|(_, inst)| inst.is_spec && !inst.halted)
+            .map(|(i, inst)| (i, inst.machine_name.clone(), inst.current_state.clone()))
+            .collect();
+
+        for (inst_id, machine_name, state_name) in spec_states {
+            let machine = self.machines.get(&machine_name).unwrap();
+            let state_decl = machine.body.states.iter().find(|s| s.name == state_name);
+
+            if let Some(state) = state_decl {
+                match state.temperature {
+                    Some(Temperature::Hot) => {
+                        self.instances[inst_id].liveness_temperature += 1;
+                        trace!(
+                            "liveness: spec '{}' in hot state '{}', temperature={}",
+                            machine_name, state_name, self.instances[inst_id].liveness_temperature
+                        );
+                        if self.instances[inst_id].liveness_temperature > self.liveness_temperature_threshold {
+                            return Err(CheckError {
+                                message: format!(
+                                    "liveness violation: spec '{}' stuck in hot state '{}' \
+                                     (temperature {} exceeded threshold {})",
+                                    machine_name, state_name,
+                                    self.instances[inst_id].liveness_temperature,
+                                    self.liveness_temperature_threshold,
+                                ),
+                            });
+                        }
+                    }
+                    Some(Temperature::Cold) => {
+                        // Cold state resets temperature
+                        if self.instances[inst_id].liveness_temperature > 0 {
+                            trace!("liveness: spec '{}' reached cold state '{}', temperature reset", machine_name, state_name);
+                        }
+                        self.instances[inst_id].liveness_temperature = 0;
+                    }
+                    None => {
+                        // Warm (unmarked) state: temperature stays the same
+                        // No increment, no reset
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn announce_event(&mut self, event_name: &str, payload: &Option<PValue>) {
         // Deliver event to all spec monitors that observe it
         let spec_ids: Vec<usize> = self.instances.iter().enumerate()
@@ -829,8 +929,20 @@ impl Runtime {
             Expr::NullLit(_) => Ok(PValue::Null),
             Expr::This(_) => Ok(PValue::MachineRef(id)),
             Expr::HaltEvent(_) => Ok(PValue::EventId("halt".to_string())),
-            Expr::Nondet(_) => Ok(PValue::Bool(self.rng.random_bool(0.5))),
-            Expr::FairNondet(_) => Ok(PValue::Bool(self.rng.random_bool(0.5))),
+            Expr::Nondet(_) => {
+                // Unfair nondeterminism: can be biased to test liveness
+                let val = match self.nondet_bias {
+                    Some(b) => b,
+                    None => self.rng.random_bool(0.5),
+                };
+                Ok(PValue::Bool(val))
+            }
+            Expr::FairNondet(_) => {
+                // Fair nondeterminism: alternate to ensure both branches are explored.
+                // This models the fairness constraint that both choices must eventually occur.
+                self.fair_nondet_counter += 1;
+                Ok(PValue::Bool(self.fair_nondet_counter % 2 == 0))
+            }
 
             Expr::Iden(name, _) => {
                 // Check locals/env first
