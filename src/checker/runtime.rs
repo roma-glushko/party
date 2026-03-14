@@ -414,8 +414,16 @@ impl Runtime {
             }
         }
 
-        // Unhandled event — just drop it (P semantics: unhandled events are dropped)
-        Ok(())
+        // Unhandled event in current state
+        debug!("unhandled event '{}' in machine {}[{}] state={}",
+            event_name, machine_name, id, current_state);
+        // In P, unhandled events that are not ignored or deferred cause a runtime error
+        Err(CheckError {
+            message: format!(
+                "unhandled event '{}' in state '{}' of machine '{}'",
+                event_name, current_state, machine_name
+            ),
+        })
     }
 
     fn run_entry_handler(&mut self, id: usize, state: &StateDecl, payload: Option<PValue>) -> Result<(), CheckError> {
@@ -525,12 +533,13 @@ impl Runtime {
         match outcome {
             HandlerOutcome::Normal | HandlerOutcome::Return(_) | HandlerOutcome::Break | HandlerOutcome::Continue => Ok(()),
             HandlerOutcome::Raised(event, payload) => {
+                debug!("raise '{}' in machine {}[{}] state={}",
+                    event, self.instances[id].machine_name, id, self.instances[id].current_state);
                 if event == "halt" {
                     self.instances[id].halted = true;
                     return Ok(());
                 }
                 self.instances[id].event_queue.push_front((event, payload));
-                // Limit recursion depth via step counter
                 self.steps += 1;
                 if self.steps >= self.max_steps {
                     return Ok(());
