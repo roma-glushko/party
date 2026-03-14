@@ -3,6 +3,8 @@ pub mod errors;
 pub mod lexer;
 pub mod parser;
 pub mod token;
+pub mod typecheck;
+pub mod types;
 
 use std::path::Path;
 
@@ -11,7 +13,7 @@ use errors::CompileError;
 /// Placeholder for a successfully compiled P program.
 #[derive(Debug)]
 pub struct CompiledProgram {
-    // TODO: Will be populated with typed IR in Phase 3
+    pub programs: Vec<ast::Program>,
 }
 
 /// Compile all .p files in a directory into a program.
@@ -34,18 +36,45 @@ pub fn compile(test_dir: &Path) -> Result<CompiledProgram, Vec<CompileError>> {
     }
 
     // Phase 1: Lex all sources
+    let mut all_tokens = Vec::new();
     for (path, source) in &sources {
-        if let Err(e) = lexer::lex(source) {
-            return Err(vec![CompileError::from_offset(
-                format!("Lexer error in {}: {e}", path.display()),
-                source,
-                e.offset,
-            )]);
+        match lexer::lex(source) {
+            Ok(tokens) => all_tokens.push((path.clone(), tokens, source.clone())),
+            Err(e) => {
+                return Err(vec![CompileError::from_offset(
+                    format!("Lexer error in {}: {e}", path.display()),
+                    source,
+                    e.offset,
+                )]);
+            }
         }
     }
 
-    // TODO: Phase 2 - Parse
-    // TODO: Phase 3 - Type check
-    // For now, just return success if lexing passed
-    Ok(CompiledProgram {})
+    // Phase 2: Parse all sources
+    let mut programs = Vec::new();
+    let mut combined_source = String::new();
+    for (_path, tokens, source) in all_tokens {
+        let mut p = parser::Parser::new(tokens, source.clone());
+        match p.parse_program() {
+            Ok(prog) => {
+                programs.push(prog);
+                if !combined_source.is_empty() {
+                    combined_source.push('\n');
+                }
+                combined_source.push_str(&source);
+            }
+            Err(e) => {
+                return Err(vec![CompileError::from_offset(
+                    format!("Parse error: {e}"),
+                    &source,
+                    e.span.start,
+                )]);
+            }
+        }
+    }
+
+    // Phase 3: Type check
+    typecheck::check_program(&programs, &combined_source)?;
+
+    Ok(CompiledProgram { programs })
 }
