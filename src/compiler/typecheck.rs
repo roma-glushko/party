@@ -664,6 +664,15 @@ impl<'a> TypeChecker<'a> {
                                     ee.span,
                                 );
                             }
+                            // Entry functions referenced by name must have <= 1 parameter
+                            if let Some(fi) = self.functions.get(fun_name) {
+                                if fi.params.len() > 1 {
+                                    self.err(
+                                        format!("entry function '{fun_name}' has {} parameters, expected at most 1", fi.params.len()),
+                                        ee.span,
+                                    );
+                                }
+                            }
                         }
                         if let Some(handler) = &ee.anon_handler {
                             let ctx = FnContext {
@@ -690,6 +699,15 @@ impl<'a> TypeChecker<'a> {
                                     format!("exit function '{fun_name}' not found in machine '{}'", m.name),
                                     ee.span,
                                 );
+                            }
+                            // Exit functions must have 0 parameters
+                            if let Some(fi) = self.functions.get(fun_name) {
+                                if !fi.params.is_empty() {
+                                    self.err(
+                                        format!("exit function '{fun_name}' must have no parameters"),
+                                        ee.span,
+                                    );
+                                }
                             }
                         }
                         if let Some(handler) = &ee.anon_handler {
@@ -1015,6 +1033,10 @@ impl<'a> TypeChecker<'a> {
                     self.err("cannot raise event in exit handler", *span);
                 }
                 let _ev_ty = self.infer_expr_type(event, ctx, locals);
+                // Check for raising null event
+                if matches!(event, Expr::NullLit(_)) || matches!(event, Expr::Iden(n, _) if n == "null") {
+                    self.err("cannot raise the null event", *span);
+                }
                 // Check payload matches event declaration
                 if let Expr::Iden(name, _) = event {
                     if let Some(ev_info) = self.events.get(name) {
@@ -1321,8 +1343,14 @@ impl<'a> TypeChecker<'a> {
                 target_ty
             }
 
-            Expr::Choose(arg, _) => {
+            Expr::Choose(arg, span) => {
                 if let Some(a) = arg {
+                    // Static check: choose(literal > 10000) is an error
+                    if let Expr::IntLit(n, _) = a.as_ref() {
+                        if *n > 10000 {
+                            self.err(format!("choose argument {n} exceeds maximum of 10000"), *span);
+                        }
+                    }
                     let ty = self.infer_expr_type(a, ctx, locals);
                     match ty.canonicalize() {
                         PResolvedType::Int => PResolvedType::Int,
