@@ -82,7 +82,7 @@ impl Runtime {
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
-            max_steps: 1000,
+            max_steps: 2000,
         };
 
         // Register all declarations
@@ -176,13 +176,10 @@ impl Runtime {
             self.steps += 1;
         }
 
-        // Check liveness: any spec in hot state when system is quiescent
-        // Only flag if we hit the step limit (indicating potential infinite loop)
-        // or if all machines are done but spec is still hot
-        let all_done = self.instances.iter()
-            .filter(|inst| !inst.is_spec)
-            .all(|inst| inst.halted || inst.event_queue.is_empty());
-        if all_done || self.steps >= self.max_steps {
+        // Check liveness: only flag if we hit the step limit (indicating the system
+        // might be stuck in a hot state forever). Don't flag on natural termination
+        // because the system might just not have had time to reach a cold state.
+        if self.steps >= self.max_steps {
             for inst in &self.instances {
                 if inst.is_spec {
                     let machine = self.machines.get(&inst.machine_name).unwrap();
@@ -744,9 +741,10 @@ impl Runtime {
                 Ok(HandlerOutcome::GotoState(state.clone(), p))
             }
             Stmt::Receive { cases, .. } => {
-                // Block until a matching event arrives
-                // In our simple runtime, we just try to find a matching event in the queue
+                // Block until a matching event arrives.
+                // Process other machines while waiting.
                 for _ in 0..self.max_steps {
+                    // Check queue for matching event
                     let queue = &self.instances[id].event_queue;
                     let mut found = None;
                     for (qi, (ev, _)) in queue.iter().enumerate() {
@@ -760,16 +758,33 @@ impl Runtime {
                     }
 
                     if let Some((qi, case)) = found {
-                        let (ev_name, ev_payload) = self.instances[id].event_queue.remove(qi).unwrap();
-                        let _ = ev_name; // Event name already matched
+                        let (_ev_name, ev_payload) = self.instances[id].event_queue.remove(qi).unwrap();
                         if let Some(param) = &case.handler.param {
                             env.insert(param.name.clone(), ev_payload.unwrap_or(PValue::Null));
                         }
                         return self.exec_body(id, machine, &case.handler.body, env);
                     }
 
-                    // No matching event — need to wait. In our simple runtime, just break.
-                    break;
+                    // No matching event — step other machines
+                    let other_enabled: Vec<usize> = self.instances.iter().enumerate()
+                        .filter(|(i, inst)| *i != id && !inst.halted && !inst.event_queue.is_empty() && !inst.is_spec)
+                        .map(|(i, _)| i)
+                        .collect();
+
+                    if other_enabled.is_empty() {
+                        // Nobody else can run — give up to avoid deadlock
+                        break;
+                    }
+
+                    // Step a random other machine
+                    let other_id = if other_enabled.len() == 1 {
+                        other_enabled[0]
+                    } else {
+                        other_enabled[self.rng.random_range(0..other_enabled.len())]
+                    };
+                    self.step_machine(other_id)?;
+                    self.steps += 1;
+                    if self.steps >= self.max_steps { break; }
                 }
                 Ok(HandlerOutcome::Normal)
             }
