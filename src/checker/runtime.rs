@@ -1144,15 +1144,29 @@ impl Runtime {
                 match base_val {
                     PValue::Seq(seq) => {
                         let i = idx_val.as_int().unwrap_or(0) as usize;
-                        Ok(seq.get(i).cloned().unwrap_or(PValue::Null))
+                        if i >= seq.len() {
+                            return Err(CheckError {
+                                message: format!("index out of bounds: accessing index {i} in sequence of size {}", seq.len()),
+                            });
+                        }
+                        Ok(seq[i].clone())
                     }
                     PValue::Set(set) => {
-                        // Set indexing by position
                         let i = idx_val.as_int().unwrap_or(0) as usize;
-                        Ok(set.get(i).cloned().unwrap_or(PValue::Null))
+                        if i >= set.len() {
+                            return Err(CheckError {
+                                message: format!("index out of bounds: accessing index {i} in set of size {}", set.len()),
+                            });
+                        }
+                        Ok(set[i].clone())
                     }
                     PValue::Map(map) => {
-                        Ok(map.get(&idx_val).cloned().unwrap_or(PValue::Null))
+                        match map.get(&idx_val) {
+                            Some(val) => Ok(val.clone()),
+                            None => Err(CheckError {
+                                message: format!("key not found in map: {idx_val}"),
+                            }),
+                        }
                     }
                     _ => Ok(PValue::Null),
                 }
