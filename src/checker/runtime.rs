@@ -349,10 +349,25 @@ impl Runtime {
             return Ok(());
         }
 
-        // Handle halt event
+        // Handle halt event — check for handler first
         if event_name == "halt" {
-            self.instances[id].halted = true;
-            return Ok(());
+            // Check if current state has a handler for halt
+            let machine_name_h = self.instances[id].machine_name.clone();
+            let current_state_h = self.instances[id].current_state.clone();
+            let machine_h = self.machines.get(&machine_name_h).unwrap().clone();
+            let state_h = machine_h.body.states.iter().find(|s| s.name == current_state_h);
+            let has_handler = state_h.map_or(false, |s| {
+                s.items.iter().any(|item| match item {
+                    StateBodyItem::OnEventDoAction(on) => on.events.contains(&"halt".to_string()),
+                    StateBodyItem::OnEventGotoState(on) => on.events.contains(&"halt".to_string()),
+                    _ => false,
+                })
+            });
+            if !has_handler {
+                self.instances[id].halted = true;
+                return Ok(());
+            }
+            // Fall through to normal event processing
         }
 
         let machine_name = self.instances[id].machine_name.clone();
@@ -540,8 +555,25 @@ impl Runtime {
                 debug!("raise '{}' in machine {}[{}] state={}",
                     event, self.instances[id].machine_name, id, self.instances[id].current_state);
                 if event == "halt" {
-                    self.instances[id].halted = true;
-                    return Ok(());
+                    // Check if there's a handler for halt in the current state
+                    // before actually halting
+                    let machine_name = self.instances[id].machine_name.clone();
+                    let current_state = self.instances[id].current_state.clone();
+                    let machine = self.machines.get(&machine_name).unwrap().clone();
+                    let state = machine.body.states.iter()
+                        .find(|s| s.name == current_state);
+                    let has_halt_handler = state.map_or(false, |s| {
+                        s.items.iter().any(|item| match item {
+                            StateBodyItem::OnEventDoAction(on) => on.events.contains(&"halt".to_string()),
+                            StateBodyItem::OnEventGotoState(on) => on.events.contains(&"halt".to_string()),
+                            _ => false,
+                        })
+                    });
+                    if !has_halt_handler {
+                        self.instances[id].halted = true;
+                        return Ok(());
+                    }
+                    // Fall through to process halt as a regular event
                 }
                 self.instances[id].event_queue.push_front((event, payload));
                 self.steps += 1;
