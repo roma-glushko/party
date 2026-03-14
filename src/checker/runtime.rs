@@ -379,6 +379,11 @@ impl Runtime {
             .unwrap()
             .clone();
 
+        // Announce event to spec monitors (they observe all event processing)
+        if !self.instances[id].is_spec {
+            self.announce_event(&event_name, &payload)?;
+        }
+
         // Find handler for this event
         for item in &state.items {
             match item {
