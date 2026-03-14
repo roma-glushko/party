@@ -405,8 +405,13 @@ impl<'a> TypeChecker<'a> {
 
         let ret_type = f.ret_type.as_ref().map(|t| self.resolve_type(t));
 
-        // Check for duplicate function definitions
-        if self.functions.contains_key(&f.name) {
+        // Check for duplicate function definitions (within the same scope)
+        let key = if let Some(m) = machine {
+            format!("{}::{}", m, f.name)
+        } else {
+            f.name.clone()
+        };
+        if self.functions.contains_key(&key) {
             if let Some(m) = machine {
                 self.err(format!("duplicate function '{}' in machine '{m}'", f.name), f.span);
             } else {
@@ -414,6 +419,15 @@ impl<'a> TypeChecker<'a> {
             }
         }
 
+        // Insert with qualified key for duplicate checking
+        self.functions.insert(key, FunctionInfo {
+            params: params.clone(),
+            ret_type: ret_type.clone(),
+            is_foreign: f.is_foreign,
+            can_send: false, can_raise: false, can_change_state: false,
+            can_create: false, can_receive: false, is_nondeterministic: false,
+        });
+        // Also insert with simple name for lookup
         self.functions.insert(
             f.name.clone(),
             FunctionInfo {
