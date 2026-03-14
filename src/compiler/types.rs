@@ -38,7 +38,7 @@ impl PResolvedType {
             // Any accepts everything
             (PResolvedType::Any, _) => true,
 
-            // Null is special
+            // Null is special — accepted by reference-like types
             (_, PResolvedType::Null) => matches!(
                 me,
                 PResolvedType::Any
@@ -46,6 +46,8 @@ impl PResolvedType {
                     | PResolvedType::Event
                     | PResolvedType::Null
                     | PResolvedType::Permission(_)
+                    | PResolvedType::Foreign(_)
+                    | PResolvedType::Data
             ),
 
             // Machine accepts machine, null, and permission types
@@ -89,7 +91,6 @@ impl PResolvedType {
             // Permission types (interface/machine references)
             (PResolvedType::Permission(_), PResolvedType::Permission(_)) => true,
             (PResolvedType::Permission(_), PResolvedType::Machine) => true,
-            (PResolvedType::Permission(_), PResolvedType::Null) => true,
 
             // Data accepts anything without permissions
             (PResolvedType::Data, _) => true,
@@ -100,7 +101,6 @@ impl PResolvedType {
             (PResolvedType::Permission(a), PResolvedType::Foreign(b)) => a == b,
             // Machine accepts foreign/permission types (interface references)
             (PResolvedType::Machine, PResolvedType::Foreign(_)) => true,
-            (PResolvedType::Foreign(_), PResolvedType::Null) => true,
 
             _ => false,
         }

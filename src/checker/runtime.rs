@@ -2,6 +2,7 @@
 
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
+use log::{debug, trace};
 use rand::Rng;
 use rand::RngExt;
 
@@ -167,18 +168,25 @@ impl Runtime {
             self.steps += 1;
         }
 
-        // Check liveness: any spec in hot state
-        for inst in &self.instances {
-            if inst.is_spec {
-                let machine = self.machines.get(&inst.machine_name).unwrap();
-                for state in &machine.body.states {
-                    if state.name == inst.current_state && state.temperature == Some(Temperature::Hot) {
-                        return Err(CheckError {
-                            message: format!(
-                                "liveness violation: spec '{}' stuck in hot state '{}'",
-                                inst.machine_name, inst.current_state
-                            ),
-                        });
+        // Check liveness: any spec in hot state when system is quiescent
+        // Only flag if we hit the step limit (indicating potential infinite loop)
+        // or if all machines are done but spec is still hot
+        let all_done = self.instances.iter()
+            .filter(|inst| !inst.is_spec)
+            .all(|inst| inst.halted || inst.event_queue.is_empty());
+        if all_done || self.steps >= self.max_steps {
+            for inst in &self.instances {
+                if inst.is_spec {
+                    let machine = self.machines.get(&inst.machine_name).unwrap();
+                    for state in &machine.body.states {
+                        if state.name == inst.current_state && state.temperature == Some(Temperature::Hot) {
+                            return Err(CheckError {
+                                message: format!(
+                                    "liveness violation: spec '{}' stuck in hot state '{}'",
+                                    inst.machine_name, inst.current_state
+                                ),
+                            });
+                        }
                     }
                 }
             }
@@ -207,6 +215,7 @@ impl Runtime {
             .find(|s| s.is_start)
             .ok_or_else(|| CheckError { message: format!("machine '{name}' has no start state") })?
             .name.clone();
+        debug!("create_machine '{}' id={} start_state={}", name, self.instances.len(), start_state);
 
         // Initialize fields with defaults
         let mut fields = HashMap::new();
@@ -277,6 +286,8 @@ impl Runtime {
                 }
                 StateBodyItem::OnEventGotoState(on) if on.events.contains(&event_name) => {
                     // Run the with-handler if any, then transition
+                    // Event payload is forwarded to the target state's entry handler
+                    let transition_payload = payload.clone();
                     if let Some(handler) = &on.with_anon_handler {
                         let mut env = self.make_env(id);
                         if let Some(param) = &handler.param {
@@ -291,7 +302,7 @@ impl Runtime {
                         let args = if let Some(p) = payload { vec![p] } else { Vec::new() };
                         self.call_function(id, &machine, fn_name, &args)?;
                     }
-                    self.transition_to_state(id, &on.target, None)?;
+                    self.transition_to_state(id, &on.target, transition_payload)?;
                     return Ok(());
                 }
                 _ => {}
@@ -374,6 +385,7 @@ impl Runtime {
     fn transition_to_state(&mut self, id: usize, target: &str, payload: Option<PValue>) -> Result<(), CheckError> {
         self.steps += 1;
         if self.steps >= self.max_steps { return Ok(()); }
+        debug!("transition {}[{}] -> {}", self.instances[id].machine_name, self.instances[id].current_state, target);
         self.run_exit_handler(id)?;
         self.instances[id].current_state = target.to_string();
         let machine_name = self.instances[id].machine_name.clone();
@@ -429,13 +441,16 @@ impl Runtime {
     }
 
     fn make_env(&self, id: usize) -> HashMap<String, PValue> {
-        self.instances[id].fields.clone()
+        let inst = &self.instances[id];
+        trace!("make_env {}[{}] state={}", inst.machine_name, id, inst.current_state);
+        inst.fields.clone()
     }
 
     fn sync_env_to_fields(&mut self, id: usize, env: &HashMap<String, PValue>) {
         let inst = &mut self.instances[id];
         for (name, val) in env {
             if inst.fields.contains_key(name) {
+                trace!("sync field {}[{}] = {}", inst.machine_name, name, val);
                 inst.fields.insert(name.clone(), val.clone());
             }
         }
@@ -491,7 +506,7 @@ impl Runtime {
             Stmt::Assume { .. } => Ok(HandlerOutcome::Normal),
             Stmt::Print { message, .. } => {
                 let val = self.eval_expr(id, machine, message, env)?;
-                eprintln!("[print] {val}");
+                debug!("[P print] {val}");
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::Return { value, .. } => {
@@ -512,8 +527,8 @@ impl Runtime {
             Stmt::Insert { lvalue, index, value, .. } => {
                 let idx = self.eval_expr(id, machine, index, env)?;
                 let val = self.eval_expr(id, machine, value, env)?;
-                let target = self.get_lvalue_mut(id, lvalue, env)?;
-                match target {
+                let mut target = self.read_lvalue(id, lvalue, env);
+                match &mut target {
                     PValue::Seq(seq) => {
                         let i = idx.as_int().unwrap_or(0) as usize;
                         if i <= seq.len() {
@@ -525,23 +540,25 @@ impl Runtime {
                     }
                     _ => {}
                 }
+                self.set_lvalue(id, lvalue, target, env)?;
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::AddToSet { lvalue, value, .. } => {
                 let val = self.eval_expr(id, machine, value, env)?;
-                let target = self.get_lvalue_mut(id, lvalue, env)?;
-                if let PValue::Set(set) = target {
+                let mut target = self.read_lvalue(id, lvalue, env);
+                if let PValue::Set(set) = &mut target {
                     if !set.contains(&val) {
                         set.push(val);
                         set.sort();
                     }
                 }
+                self.set_lvalue(id, lvalue, target, env)?;
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::Remove { lvalue, key, .. } => {
                 let k = self.eval_expr(id, machine, key, env)?;
-                let target = self.get_lvalue_mut(id, lvalue, env)?;
-                match target {
+                let mut target = self.read_lvalue(id, lvalue, env);
+                match &mut target {
                     PValue::Seq(seq) => {
                         let i = k.as_int().unwrap_or(0) as usize;
                         if i < seq.len() { seq.remove(i); }
@@ -550,6 +567,7 @@ impl Runtime {
                     PValue::Set(set) => { set.retain(|v| v != &k); }
                     _ => {}
                 }
+                self.set_lvalue(id, lvalue, target, env)?;
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::While { cond, body, .. } => {
@@ -610,7 +628,15 @@ impl Runtime {
                 for a in args {
                     arg_vals.push(self.eval_expr(id, machine, a, env)?);
                 }
+                // Sync env to fields before call so callee sees current state
+                self.sync_env_to_fields(id, env);
                 let result = self.call_function(id, machine, name, &arg_vals)?;
+                // Re-sync fields to env after call so caller sees callee's changes
+                for (fname, fval) in &self.instances[id].fields {
+                    if env.contains_key(fname) {
+                        env.insert(fname.clone(), fval.clone());
+                    }
+                }
                 match result {
                     HandlerOutcome::Return(_) | HandlerOutcome::Normal => Ok(HandlerOutcome::Normal),
                     other => Ok(other),
@@ -679,6 +705,7 @@ impl Runtime {
 
                 // Enqueue on target
                 if target_id < self.instances.len() && !self.instances[target_id].halted {
+                    debug!("send {} -> {}[{}] event={}", self.instances[id].machine_name, self.instances[target_id].machine_name, target_id, event_name);
                     self.instances[target_id].event_queue.push_back((event_name, payload));
                 }
                 Ok(HandlerOutcome::Normal)
@@ -880,7 +907,15 @@ impl Runtime {
                 for a in args {
                     arg_vals.push(self.eval_expr(id, machine, a, env)?);
                 }
-                match self.call_function(id, machine, name, &arg_vals)? {
+                self.sync_env_to_fields(id, env);
+                let result = self.call_function(id, machine, name, &arg_vals)?;
+                // Re-sync fields to env
+                for (fname, fval) in &self.instances[id].fields {
+                    if env.contains_key(fname) {
+                        env.insert(fname.clone(), fval.clone());
+                    }
+                }
+                match result {
                     HandlerOutcome::Return(Some(val)) => Ok(val),
                     _ => Ok(PValue::Null),
                 }
@@ -1043,28 +1078,28 @@ impl Runtime {
                 Ok(())
             }
             LValue::NamedTupleField(base, field, _) => {
-                let target = self.get_lvalue_mut(id, base, env)?;
-                if let PValue::NamedTuple(fields) = target {
+                let mut parent = self.read_lvalue(id, base, env);
+                if let PValue::NamedTuple(ref mut fields) = parent {
                     if let Some((_, v)) = fields.iter_mut().find(|(n, _)| n == field) {
                         *v = val;
                     }
                 }
-                Ok(())
+                self.set_lvalue(id, base, parent, env)
             }
             LValue::TupleField(base, idx, _) => {
-                let target = self.get_lvalue_mut(id, base, env)?;
-                if let PValue::Tuple(fields) = target {
+                let mut parent = self.read_lvalue(id, base, env);
+                if let PValue::Tuple(ref mut fields) = parent {
                     if *idx < fields.len() {
                         fields[*idx] = val;
                     }
                 }
-                Ok(())
+                self.set_lvalue(id, base, parent, env)
             }
             LValue::Index(base, index_expr, _) => {
                 let machine = self.machines.get(&self.instances[id].machine_name).unwrap().clone();
                 let idx = self.eval_expr(id, &machine, index_expr, env)?;
-                let target = self.get_lvalue_mut(id, base, env)?;
-                match target {
+                let mut parent = self.read_lvalue(id, base, env);
+                match &mut parent {
                     PValue::Seq(seq) => {
                         let i = idx.as_int().unwrap_or(0) as usize;
                         if i < seq.len() { seq[i] = val; }
@@ -1072,23 +1107,42 @@ impl Runtime {
                     PValue::Map(map) => { map.insert(idx, val); }
                     _ => {}
                 }
-                Ok(())
+                self.set_lvalue(id, base, parent, env)
             }
         }
     }
 
-    fn get_lvalue_mut<'b>(&self, id: usize, lv: &LValue, env: &'b mut HashMap<String, PValue>) -> Result<&'b mut PValue, CheckError> {
+    /// Read the current value at an lvalue position.
+    fn read_lvalue(&self, id: usize, lv: &LValue, env: &HashMap<String, PValue>) -> PValue {
         match lv {
             LValue::Var(name, _) => {
-                // For mut access, we only support env variables in this path
-                if let Some(val) = env.get_mut(name) {
-                    Ok(val)
-                } else {
-                    Err(CheckError { message: format!("variable '{name}' not found for mutation") })
+                env.get(name)
+                    .or_else(|| self.instances[id].fields.get(name))
+                    .cloned()
+                    .unwrap_or(PValue::Null)
+            }
+            LValue::NamedTupleField(base, field, _) => {
+                let base_val = self.read_lvalue(id, base, env);
+                match base_val {
+                    PValue::NamedTuple(fields) => {
+                        fields.iter().find(|(n, _)| n == field)
+                            .map(|(_, v)| v.clone())
+                            .unwrap_or(PValue::Null)
+                    }
+                    _ => PValue::Null,
                 }
             }
-            _ => {
-                Err(CheckError { message: "complex lvalue not fully supported in insert/remove".to_string() })
+            LValue::TupleField(base, idx, _) => {
+                let base_val = self.read_lvalue(id, base, env);
+                match base_val {
+                    PValue::Tuple(fields) => fields.get(*idx).cloned().unwrap_or(PValue::Null),
+                    _ => PValue::Null,
+                }
+            }
+            LValue::Index(base, _index_expr, _) => {
+                // For reading, we'd need to evaluate the index expr, but we don't have
+                // &mut self here. Return the whole collection instead.
+                self.read_lvalue(id, base, env)
             }
         }
     }
