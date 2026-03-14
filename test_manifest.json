@@ -1,0 +1,3133 @@
+{
+  "description": "P language regression test suite - extracted for Rust reimplementation",
+  "total_tests": 424,
+  "outcomes": {
+    "correct": 147,
+    "static_error": 137,
+    "dynamic_error": 140
+  },
+  "parametric_test_cases": [
+    "BasicNonParametricTest",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_5__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_6__g4_7__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_5__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_6__g4_8__g5_true",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_5__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_6__g4_7__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_5__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_3__g3_6__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_3__g3_6__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_3__g3_6__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_neg1__g2_4__g3_6__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_2__g2_4__g3_6__g4_8__g5_false",
+    "FullCartesianProductParametricTest___g1_5__g2_4__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_5__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_6__g4_7__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_5__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_6__g4_8__g5_true",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_5__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_6__g4_7__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_5__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_3__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_3__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_4__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_4__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_1__g2_2__g3_6__g4_8__g5_false",
+    "ParametricTestWithAssumption___g1_neg2__g2_2__g3_6__g4_8__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_5__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_5__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_5__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_5__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_6__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_6__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_6__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_6__g4_7__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_5__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_5__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_5__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_5__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_6__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_6__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_6__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_6__g4_8__b1_false__g5_true",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_5__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_5__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_5__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_5__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_6__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_6__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_6__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_6__g4_7__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_5__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_5__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_5__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_5__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_neg3__g3_6__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_neg3__g3_6__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_1__g2_4__g3_6__g4_8__b1_false__g5_false",
+    "ParametricTestWithBoolAssumption___g1_2__g2_4__g3_6__g4_8__b1_false__g5_false",
+    "TWise1CoverageTest___g1_1__g2_3__g3_5__g4_7__b1_true__g5_true",
+    "TWise1CoverageTest___g1_2__g2_neg4__g3_3__g4_8__b1_false__g5_false",
+    "TWise1CoverageTest___g1_1__g2_3__g3_20__g4_7__b1_true__g5_true",
+    "TWise2CoverageTest___g1_1__g2_3__g3_neg5__g4_7__b1_true__g5_true",
+    "TWise2CoverageTest___g1_2__g2_4__g3_6__g4_8__b1_false__g5_true",
+    "TWise2CoverageTest___g1_2__g2_4__g3_neg5__g4_10__b1_true__g5_false",
+    "TWise2CoverageTest___g1_1__g2_3__g3_6__g4_10__b1_false__g5_false",
+    "TWise2CoverageTest___g1_2__g2_3__g3_6__g4_7__b1_true__g5_false",
+    "TWise2CoverageTest___g1_1__g2_3__g3_neg5__g4_8__b1_true__g5_false",
+    "TWise2CoverageTest___g1_1__g2_4__g3_neg5__g4_7__b1_false__g5_true",
+    "TWise2CoverageTest___g1_1__g2_3__g3_neg5__g4_10__b1_true__g5_true",
+    "TWise3CoverageTest___g1_1__g2_3__g3_5__g4_7__b1_true__g5_true",
+    "TWise3CoverageTest___g1_2__g2_4__g3_neg6__g4_8__b1_true__g5_true",
+    "TWise3CoverageTest___g1_2__g2_4__g3_5__g4_7__b1_false__g5_false",
+    "TWise3CoverageTest___g1_1__g2_3__g3_neg6__g4_8__b1_false__g5_false",
+    "TWise3CoverageTest___g1_2__g2_3__g3_neg6__g4_7__b1_false__g5_true",
+    "TWise3CoverageTest___g1_1__g2_4__g3_5__g4_8__b1_false__g5_true",
+    "TWise3CoverageTest___g1_1__g2_4__g3_neg6__g4_7__b1_true__g5_false",
+    "TWise3CoverageTest___g1_2__g2_3__g3_5__g4_8__b1_true__g5_false",
+    "TWise3CoverageTest___g1_2__g2_4__g3_5__g4_7__b1_true__g5_true",
+    "TWise3CoverageTest___g1_1__g2_3__g3_neg6__g4_8__b1_true__g5_true",
+    "TWise3CoverageTest___g1_1__g2_3__g3_5__g4_7__b1_false__g5_false",
+    "TWise3CoverageTest___g1_2__g2_4__g3_neg6__g4_8__b1_false__g5_false"
+  ],
+  "tests": [
+    {
+      "path": "testdata/Combined/Correct/nullPayload/nullPayload.p",
+      "original_path": "Tst/RegressionTests/Combined/Correct/nullPayload/nullPayload.p",
+      "feature": "Combined",
+      "expected_outcome": "correct",
+      "name": "nullPayload"
+    },
+    {
+      "path": "testdata/Combined/Correct/variableType/variableType.p",
+      "original_path": "Tst/RegressionTests/Combined/Correct/variableType/variableType.p",
+      "feature": "Combined",
+      "expected_outcome": "correct",
+      "name": "variableType"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureEnclosedFunCalls/EnclosedFunCalls.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureEnclosedFunCalls/EnclosedFunCalls.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureEnclosedFunCalls"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit1/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit1/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit1"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit2/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit2/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit2"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit3/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit3/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit3"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit4/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit4/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit4"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit5/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit5/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit5"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInExit6/ControlImpureInExit.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInExit6/ControlImpureInExit.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInExit6"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto1/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto1/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto1"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto2/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto2/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto2"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto3/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto3/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto3"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto4/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto4/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto4"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto5/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto5/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto5"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto6/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto6/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto6"
+    },
+    {
+      "path": "testdata/Combined/StaticError/ControlImpureInGoto7/ControlImpureErrorsGoto.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/ControlImpureInGoto7/ControlImpureErrorsGoto.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "ControlImpureInGoto7"
+    },
+    {
+      "path": "testdata/Combined/StaticError/DuplicateActions/Duplicates11.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/DuplicateActions/Duplicates11.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "DuplicateActions"
+    },
+    {
+      "path": "testdata/Combined/StaticError/DuplicateStart/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/DuplicateStart/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "DuplicateStart"
+    },
+    {
+      "path": "testdata/Combined/StaticError/DuplicateTransitions/Duplicates-1.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/DuplicateTransitions/Duplicates-1.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "DuplicateTransitions"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates1/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates1/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates1"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates10/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates10/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates10"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates2/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates2/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates2"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates3/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates3/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates3"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates4/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates4/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates4"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates5/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates5/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates5"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates6/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates6/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates6"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates7/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates7/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates7"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates8/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates8/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates8"
+    },
+    {
+      "path": "testdata/Combined/StaticError/Duplicates9/Duplicates.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/Duplicates9/Duplicates.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "Duplicates9"
+    },
+    {
+      "path": "testdata/Combined/StaticError/FunctionNotDefined/ControlImpureInEntry.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/FunctionNotDefined/ControlImpureInEntry.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "FunctionNotDefined"
+    },
+    {
+      "path": "testdata/Combined/StaticError/PopInExitFun/PopInExitFun.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/PopInExitFun/PopInExitFun.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "PopInExitFun"
+    },
+    {
+      "path": "testdata/Combined/StaticError/RaiseInExitFun/RaiseInExitFun.p",
+      "original_path": "Tst/RegressionTests/Combined/StaticError/RaiseInExitFun/RaiseInExitFun.p",
+      "feature": "Combined",
+      "expected_outcome": "static_error",
+      "name": "RaiseInExitFun"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/BugRepro/PingPongBugRepro.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/BugRepro/PingPongBugRepro.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "BugRepro"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/BugRepro/Timer.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/BugRepro/Timer.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "BugRepro"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/BugRepro1/FunctionParMutated.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/BugRepro1/FunctionParMutated.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "BugRepro1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/BugReproManyEvents/CMain.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/BugReproManyEvents/CMain.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "BugReproManyEvents"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/EntryNamedFunction/EntryNamedFunction.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/EntryNamedFunction/EntryNamedFunction.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "EntryNamedFunction"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/EntryNamedFunction1/EntryNamedFunction1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/EntryNamedFunction1/EntryNamedFunction1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "EntryNamedFunction1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/Monitors/Monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/Monitors/Monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "Monitors"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/MoreThan32Events/CMain.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/MoreThan32Events/CMain.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "MoreThan32Events"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/ParamTest/ParamTest.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/ParamTest/ParamTest.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "ParamTest"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/PingPong/PingPong.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/PingPong/PingPong.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "PingPong"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/PingPong/PrtDistHelp.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/PingPong/PrtDistHelp.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "PingPong"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/StaticFunctions/staticfunctions.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/StaticFunctions/staticfunctions.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "StaticFunctions"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/TransitionFunction/transitionFunction.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/TransitionFunction/transitionFunction.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "TransitionFunction"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/bug1/bug1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/bug1/bug1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "bug1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/bug3/bug3.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/bug3/bug3.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "bug3"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/bug4/bug4.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/bug4/bug4.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "bug4"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/functionAny/functionAny.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/functionAny/functionAny.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "functionAny"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/monitorobserves/observes.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/monitorobserves/observes.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "monitorobserves"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/Correct/recursivefunctioncalls/recursivefunctioncalls.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/Correct/recursivefunctioncalls/recursivefunctioncalls.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "correct",
+      "name": "recursivefunctioncalls"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/AlonBug/AlonBug.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/AlonBug/AlonBug.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "AlonBug"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/EntryNamedFunction/EntryNamedFunction.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/EntryNamedFunction/EntryNamedFunction.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "EntryNamedFunction"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/MaxInstances/MaxInstances.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/MaxInstances/MaxInstances.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "MaxInstances"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/ParamTest2/ParamTest2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/ParamTest2/ParamTest2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "ParamTest2"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/StaticFunctionInMonitor/StaticFunctionInMonitor.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/StaticFunctionInMonitor/StaticFunctionInMonitor.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "StaticFunctionInMonitor"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/StaticFunctions1/staticfunctions1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/StaticFunctions1/staticfunctions1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "StaticFunctions1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/StaticFunctions2/staticfunctions2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/StaticFunctions2/staticfunctions2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "StaticFunctions2"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/DynamicError/bug2/bug2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/DynamicError/bug2/bug2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "dynamic_error",
+      "name": "bug2"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/ActionAndTransitionSameEvent/TransDecl_DoDecl.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/ActionAndTransitionSameEvent/TransDecl_DoDecl.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "ActionAndTransitionSameEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/AnonFuns/anonFunction.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/AnonFuns/anonFunction.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "AnonFuns"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/AssignBadLhs/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/AssignBadLhs/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "AssignBadLhs"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/CreateSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/CreateSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "CreateSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/DeferIgnoreSameEvent/DeferIgnore1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/DeferIgnoreSameEvent/DeferIgnore1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "DeferIgnoreSameEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/DeferredNullEvent/DeferredNullEvent.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/DeferredNullEvent/DeferredNullEvent.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "DeferredNullEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EntryNamedFunction1/EntryNamedFunction1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EntryNamedFunction1/EntryNamedFunction1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EntryNamedFunction1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EntryNamedFunction2/EntryNamedFunction2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EntryNamedFunction2/EntryNamedFunction2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EntryNamedFunction2"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EntryNamedFunction3/EntryNamedFunction3.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EntryNamedFunction3/EntryNamedFunction3.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EntryNamedFunction3"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EntryReturnsValue/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EntryReturnsValue/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EntryReturnsValue"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EventDeferredDoSameState/EventDeferredDoSameState.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EventDeferredDoSameState/EventDeferredDoSameState.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EventDeferredDoSameState"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EventDeferredHandledSameState/EventDeferredHandledSameState.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EventDeferredHandledSameState/EventDeferredHandledSameState.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EventDeferredHandledSameState"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/EventDeferredTransDoSameState/EventDeferredTransDoSameState.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/EventDeferredTransDoSameState/EventDeferredTransDoSameState.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "EventDeferredTransDoSameState"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/FunctionMissingArgs/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/FunctionMissingArgs/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "FunctionMissingArgs"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/FunctionMissingReturn/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/FunctionMissingReturn/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "FunctionMissingReturn"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/FunctionReturnsNothingInAssignment/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/FunctionReturnsNothingInAssignment/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "FunctionReturnsNothingInAssignment"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/FunctionReturnsWrongType/function.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/FunctionReturnsWrongType/function.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "FunctionReturnsWrongType"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/HasEntryArgs/entryExit_2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/HasEntryArgs/entryExit_2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "HasEntryArgs"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/HasExitArgs/entryExit_2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/HasExitArgs/entryExit_2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "HasExitArgs"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/IgnoredNullEvent/IgnoredNullEvent.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/IgnoredNullEvent/IgnoredNullEvent.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "IgnoredNullEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/LexerError1/LexerError1.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/LexerError1/LexerError1.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "LexerError1"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/LexerError2/LexerError2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/LexerError2/LexerError2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "LexerError2"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/MachineNoStartState/purity.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/MachineNoStartState/purity.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "MachineNoStartState"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NoDeferInSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NoDeferInSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NoDeferInSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NoSendInSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NoSendInSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NoSendInSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NonExistentDoFun/nonExistDo.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NonExistentDoFun/nonExistDo.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NonExistentDoFun"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NonExistentEntryFun/entryExit_2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NonExistentEntryFun/entryExit_2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NonExistentEntryFun"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NonExistentExitFun/entryExit_2.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NonExistentExitFun/entryExit_2.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NonExistentExitFun"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NonExistentGotoFun/nonExistGoto.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NonExistentGotoFun/nonExistGoto.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NonExistentGotoFun"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/NullEventDecl/NullEventDecl.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/NullEventDecl/NullEventDecl.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "NullEventDecl"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/ParamTest3/ParamTest3.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/ParamTest3/ParamTest3.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "ParamTest3"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/ParamTest4/ParamTest4.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/ParamTest4/ParamTest4.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "ParamTest4"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/Partial/Partial.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/Partial/Partial.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "Partial"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/RaiseSendBadValueSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/RaiseSendBadValueSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "RaiseSendBadValueSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/RaiseSendNullSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/RaiseSendNullSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "RaiseSendNullSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/RaisedNullEvent/RaisedNullEvent.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/RaisedNullEvent/RaisedNullEvent.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "RaisedNullEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/SendInMonitor/SendInMonitor.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/SendInMonitor/SendInMonitor.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "SendInMonitor"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/SentNullEvent/SentNullEvent.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/SentNullEvent/SentNullEvent.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "SentNullEvent"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/SideEffectsInMonitor/SideEffectsInMonitor.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/SideEffectsInMonitor/SideEffectsInMonitor.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "SideEffectsInMonitor"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/StartMachineNullParam/StartMachineNullParam.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/StartMachineNullParam/StartMachineNullParam.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "StartMachineNullParam"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/StaticFunctionInMonitor/StaticFunctionInMonitor.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/StaticFunctionInMonitor/StaticFunctionInMonitor.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "StaticFunctionInMonitor"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/TransitionOnNullInSpecMachine/monitors.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/TransitionOnNullInSpecMachine/monitors.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "TransitionOnNullInSpecMachine"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/UndefinedStateInTransition/TransDecl_DoDecl.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/UndefinedStateInTransition/TransDecl_DoDecl.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "UndefinedStateInTransition"
+    },
+    {
+      "path": "testdata/Feature1SMLevelDecls/StaticError/functionAnyAnon/functionAnyAnon.p",
+      "original_path": "Tst/RegressionTests/Feature1SMLevelDecls/StaticError/functionAnyAnon/functionAnyAnon.p",
+      "feature": "Feature1SMLevelDecls",
+      "expected_outcome": "static_error",
+      "name": "functionAnyAnon"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/NondetFun/NondetFun.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/NondetFun/NondetFun.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "NondetFun"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/SEM_ONeMachine_34/payloadActionsFuns.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/SEM_ONeMachine_34/payloadActionsFuns.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "SEM_ONeMachine_34"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/SEM_OneMachine_33/seqtuple.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/SEM_OneMachine_33/seqtuple.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_33"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/SEM_OneMachine_35/bubblesort.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/SEM_OneMachine_35/bubblesort.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_35"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/assertExample/assertExample.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/assertExample/assertExample.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "assertExample"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/foreach/foreach1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/foreach/foreach1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "foreach"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/foreach1/foreach1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/foreach1/foreach1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "foreach1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/foreach2/foreach2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/foreach2/foreach2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "foreach2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/foreach3/foreach3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/foreach3/foreach3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "foreach3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/foreach4/foreach4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/foreach4/foreach4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "foreach4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/goto1/goto1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/goto1/goto1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "goto1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/goto2/goto2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/goto2/goto2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "goto2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/goto3/goto3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/goto3/goto3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "goto3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/goto4/goto4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/goto4/goto4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "goto4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/linear2/linear2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/linear2/linear2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "linear2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/newMachine1/newMachine1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/newMachine1/newMachine1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "newMachine1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/pingPongReceive4/pingPongReceive4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/pingPongReceive4/pingPongReceive4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/pingPongReceive5/pingPongReceive5.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/pingPongReceive5/pingPongReceive5.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive5"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/raise1/raise1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/raise1/raise1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "raise1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/raise2/raise2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/raise2/raise2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "raise2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/raise3/raise3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/raise3/raise3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "raise3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive1/receive1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive1/receive1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive11/receive11.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive11/receive11.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive11"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive111/receive1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive111/receive1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive111"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive13/receive13.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive13/receive13.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive13"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive14/receiveInExit1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive14/receiveInExit1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive14"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive15/receiveInExit2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive15/receiveInExit2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive15"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive16/receiveInExit3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive16/receiveInExit3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive16"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive18/receive18.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive18/receive18.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive18"
+    },
+    {
+      "path": "testdata/Feature2Stmts/Correct/receive19/receive19.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/Correct/receive19/receive19.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "correct",
+      "name": "receive19"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/GotoStmt1/gotoStmt1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/GotoStmt1/gotoStmt1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "GotoStmt1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/GotoStmt2/gotoStmt2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/GotoStmt2/gotoStmt2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "GotoStmt2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/NondetFun/NondetFun.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/NondetFun/NondetFun.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "NondetFun"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/break1/break1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/break1/break1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "break1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/continue1/continue1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/continue1/continue1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "continue1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/foreach/foreach1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/foreach/foreach1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "foreach"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/foreach2/foreach2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/foreach2/foreach2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "foreach2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/foreach3/foreach3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/foreach3/foreach3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "foreach3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/foreach4/foreach4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/foreach4/foreach4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "foreach4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/goto2/goto2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/goto2/goto2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "goto2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/goto3/goto3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/goto3/goto3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "goto3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/goto4/goto4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/goto4/goto4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "goto4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/newMachine1/newMachine1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/newMachine1/newMachine1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "newMachine1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/pingPongReceive4/pingPongReceive4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/pingPongReceive4/pingPongReceive4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "pingPongReceive4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/pingPongReceive5/pingPongReceive5.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/pingPongReceive5/pingPongReceive5.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "pingPongReceive5"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/raise1/raise1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/raise1/raise1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "raise1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/raise2/raise2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/raise2/raise2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "raise2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/raise3/raise3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/raise3/raise3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "raise3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive10/receive10.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive10/receive10.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive10"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive11/receive11.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive11/receive11.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive11"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive11_1/receive11_1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive11_1/receive11_1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive11_1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive12/receive12.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive12/receive12.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive12"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive17/receive17.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive17/receive17.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive17"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive17/temp.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive17/temp.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive17"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive2/receive2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive2/receive2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive3/receive3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive3/receive3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive4/receive4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive4/receive4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive6/receive6.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive6/receive6.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive6"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive7/receive7.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive7/receive7.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive7"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive8/receive8.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive8/receive8.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive8"
+    },
+    {
+      "path": "testdata/Feature2Stmts/DynamicError/receive9/receive9.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/DynamicError/receive9/receive9.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "dynamic_error",
+      "name": "receive9"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/LinearBugRepro1/LinearBugRepro1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/LinearBugRepro1/LinearBugRepro1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "LinearBugRepro1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/TransactionType/bug.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/TransactionType/bug.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "TransactionType"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/breakOutsideLoop/breakOutsideLoop.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/breakOutsideLoop/breakOutsideLoop.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "breakOutsideLoop"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/continueOutsideLoop/continueOutsideLoop.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/continueOutsideLoop/continueOutsideLoop.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "continueOutsideLoop"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/entryExit/entryExit.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/entryExit/entryExit.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "entryExit"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/eventExprSendRaise/EventExprSendRaise.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/eventExprSendRaise/EventExprSendRaise.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "eventExprSendRaise"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/foreach1/foreach1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/foreach1/foreach1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "foreach1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/foreach2/foreach2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/foreach2/foreach2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "foreach2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/foreach3/foreach3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/foreach3/foreach3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "foreach3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/goto1/goto1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/goto1/goto1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "goto1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/goto2/goto2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/goto2/goto2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "goto2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/goto3/goto3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/goto3/goto3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "goto3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/linear/linear.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/linear/linear.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "linear"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/linear3/linear3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/linear3/linear3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "linear3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/linear4/linear4.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/linear4/linear4.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "linear4"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/lvalues/lvalues.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/lvalues/lvalues.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "lvalues"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/newMachine1/newMachine1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/newMachine1/newMachine1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "newMachine1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/newMachine2/newMachine2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/newMachine2/newMachine2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "newMachine2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/newMachine3/newMachine3.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/newMachine3/newMachine3.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "newMachine3"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/nmdType/nmdType.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/nmdType/nmdType.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "nmdType"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/raise1/raise1.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/raise1/raise1.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "raise1"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/raise2/raise2.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/raise2/raise2.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "raise2"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/sends/sends.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/sends/sends.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "sends"
+    },
+    {
+      "path": "testdata/Feature2Stmts/StaticError/staticFunReturnType/test.p",
+      "original_path": "Tst/RegressionTests/Feature2Stmts/StaticError/staticFunReturnType/test.p",
+      "feature": "Feature2Stmts",
+      "expected_outcome": "static_error",
+      "name": "staticFunReturnType"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/ExprOperatorsAsserts/ExprOperatorsAsserts.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/ExprOperatorsAsserts/ExprOperatorsAsserts.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "ExprOperatorsAsserts"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/MemoryLeakRepro/nonDetFunctionInExpr2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/MemoryLeakRepro/nonDetFunctionInExpr2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "MemoryLeakRepro"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/ModExpr1/modexpr1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/ModExpr1/modexpr1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "ModExpr1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/NestedFun/NestedFun.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/NestedFun/NestedFun.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "NestedFun"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/NonDetFunctionInExpr/nonDetFunctionInExpr.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/NonDetFunctionInExpr/nonDetFunctionInExpr.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "NonDetFunctionInExpr"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/ShortCircuitEval/ShortCircuitEval.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/ShortCircuitEval/ShortCircuitEval.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "ShortCircuitEval"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/SingleNamedTuple1/singlenamedtuple.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/SingleNamedTuple1/singlenamedtuple.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "SingleNamedTuple1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/SingleNamedTuple2/singlenamedtuple.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/SingleNamedTuple2/singlenamedtuple.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "SingleNamedTuple2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/assertMessage/assertMessage.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/assertMessage/assertMessage.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "assertMessage"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/assertMessage2/assertMessage2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/assertMessage2/assertMessage2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "assertMessage2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/cast1/cast1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/cast1/cast1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "cast1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/cast2/cast2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/cast2/cast2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "cast2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/cast3/cast3.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/cast3/cast3.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "cast3"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/chooseExpr1/choose1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/chooseExpr1/choose1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "chooseExpr1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/chooseExpr2/choose2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/chooseExpr2/choose2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "chooseExpr2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/events1/events1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/events1/events1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "events1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/float1/float1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/float1/float1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "float1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/float2/float2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/float2/float2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "float2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/float3/float3.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/float3/float3.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "float3"
+    },
+    {
+      "path": "testdata/Feature3Exprs/Correct/issue511/issue511.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/Correct/issue511/issue511.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "correct",
+      "name": "issue511"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/FuncInExpr/FuncInExpr.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/FuncInExpr/FuncInExpr.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "FuncInExpr"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/InOperator/InOperator.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/InOperator/InOperator.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "InOperator"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/ModExpr1/modexpr1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/ModExpr1/modexpr1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "ModExpr1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/chooseExpr2/choose2.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/chooseExpr2/choose2.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "chooseExpr2"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/tooManyChoicesInt/tooManyChoicesInt.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/tooManyChoicesInt/tooManyChoicesInt.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "tooManyChoicesInt"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/tooManyChoicesMap/tooManyChoicesMap.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/tooManyChoicesMap/tooManyChoicesMap.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "tooManyChoicesMap"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/tooManyChoicesSeq/tooManyChoicesSeq.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/tooManyChoicesSeq/tooManyChoicesSeq.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "tooManyChoicesSeq"
+    },
+    {
+      "path": "testdata/Feature3Exprs/DynamicError/tooManyChoicesSet/tooManyChoicesSet.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/DynamicError/tooManyChoicesSet/tooManyChoicesSet.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "dynamic_error",
+      "name": "tooManyChoicesSet"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/ExprsOperators/ExprOperators.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/ExprsOperators/ExprOperators.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "ExprsOperators"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/InOperator/InOperator.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/InOperator/InOperator.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "InOperator"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/MachineFieldAccess/MachineFieldAccess.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/MachineFieldAccess/MachineFieldAccess.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "MachineFieldAccess"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/MachineFieldAccessInExpr/MachineFieldAccessInExpr.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/MachineFieldAccessInExpr/MachineFieldAccessInExpr.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "MachineFieldAccessInExpr"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/MachineFieldAccessNested/MachineFieldAccessNested.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/MachineFieldAccessNested/MachineFieldAccessNested.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "MachineFieldAccessNested"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/ModExpr1/modexpr1.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/ModExpr1/modexpr1.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "ModExpr1"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/choose3/choose3.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/choose3/choose3.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "choose3"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/fields/fields.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/fields/fields.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "fields"
+    },
+    {
+      "path": "testdata/Feature3Exprs/StaticError/tooManyChoices/tooManyChoices.p",
+      "original_path": "Tst/RegressionTests/Feature3Exprs/StaticError/tooManyChoices/tooManyChoices.p",
+      "feature": "Feature3Exprs",
+      "expected_outcome": "static_error",
+      "name": "tooManyChoices"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/CastInExprsAsserts/CastInExprsAsserts.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/CastInExprsAsserts/CastInExprsAsserts.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "CastInExprsAsserts"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/EnumType/enumType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/EnumType/enumType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "EnumType"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/EnumType/includedEnums.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/EnumType/includedEnums.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "EnumType"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/ForeignTypes/foreigntypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/ForeignTypes/foreigntypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "ForeignTypes"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/ReturnIssue/returnIssue.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/ReturnIssue/returnIssue.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "ReturnIssue"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/SetImpl0/SetImpl0.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/SetImpl0/SetImpl0.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "SetImpl0"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/SetImpl2/SetImpl2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/SetImpl2/SetImpl2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "SetImpl2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/SetImpl3/SetImpl3.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/SetImpl3/SetImpl3.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "SetImpl3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/anyTypeNullValue/anyTypeNullValue.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/anyTypeNullValue/anyTypeNullValue.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "anyTypeNullValue"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/enum1/enum1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/enum1/enum1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "enum1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/enum2/enum2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/enum2/enum2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "enum2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/enum3/enum3.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/enum3/enum3.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "enum3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/enum4/enum4.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/enum4/enum4.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "enum4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/float1/float1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/float1/float1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "float1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/float4/float4.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/float4/float4.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "float4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nestedTypedef/nestedTypedef.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nestedTypedef/nestedTypedef.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nestedTypedef"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nonAtomicDataTypes"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nonAtomicDataTypes12/StackOverflowException.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nonAtomicDataTypes12/StackOverflowException.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nonAtomicDataTypes12"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nonAtomicDataTypes13/SeqAssgnToAny.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nonAtomicDataTypes13/SeqAssgnToAny.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nonAtomicDataTypes13"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nonAtomicDataTypes16/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nonAtomicDataTypes16/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nonAtomicDataTypes16"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/nonAtomicDataTypesAllAsserts/nonAtomicDataTypesAllAsserts.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/nonAtomicDataTypesAllAsserts/nonAtomicDataTypesAllAsserts.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "nonAtomicDataTypesAllAsserts"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/seq1/seq1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/seq1/seq1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "seq1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/string0/string0.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/string0/string0.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "string0"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/stringcomp/stringcomp.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/stringcomp/stringcomp.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "stringcomp"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/typedef/typedef.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/typedef/typedef.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "typedef"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/typedef2/equality.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/typedef2/equality.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "typedef2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/Correct/typedef3/typedef3.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/Correct/typedef3/typedef3.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "correct",
+      "name": "typedef3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs1/CastInExprsDynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs1/CastInExprsDynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs2/CastInExprsDynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs2/CastInExprsDynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs3/CastInExprsDynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs3/CastInExprsDynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs4/CastInExprsDynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs4/CastInExprsDynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs5/CastInExprsdynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs5/CastInExprsdynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs5"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/CastInExprs6/CastInExprsDynError.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/CastInExprs6/CastInExprsDynError.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "CastInExprs6"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/EnumType1/enumType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/EnumType1/enumType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "EnumType1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/ForeignTypes/foreigntypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/ForeignTypes/foreigntypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "ForeignTypes"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/SetImpl1/SetImpl1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/SetImpl1/SetImpl1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "SetImpl1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/anyType/anyType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/anyType/anyType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "anyType"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/anyType1/anyType1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/anyType1/anyType1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "anyType1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/anyType2/anyType2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/anyType2/anyType2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "anyType2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/anyType3/anyType3.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/anyType3/anyType3.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "anyType3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/enum1/enum1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/enum1/enum1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "enum1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes1/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes1/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes10/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes10/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes10"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes11/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes11/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes11"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes14/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes14/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes14"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes15/nonADT.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes15/nonADT.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes15"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes2/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes2/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes3/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes3/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes4/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes4/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes5/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes5/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes5"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes6/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes6/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes6"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes7/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes7/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes7"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes8/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes8/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes8"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/nonAtomicDataTypes9/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/nonAtomicDataTypes9/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "nonAtomicDataTypes9"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/seq1/seq1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/seq1/seq1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "seq1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/string1/string1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/string1/string1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "string1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/typedef1/typedef.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/typedef1/typedef.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "typedef1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/typedef2/Timer.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/typedef2/Timer.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "typedef2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/DynamicError/typedef2/typedef2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/DynamicError/typedef2/typedef2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "dynamic_error",
+      "name": "typedef2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/CastInExprs/CastInExprs.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/CastInExprs/CastInExprs.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "CastInExprs"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EnumType/enumType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EnumType/enumType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EnumType"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EventSets_1/EventSets_1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EventSets_1/EventSets_1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EventSets_1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EventSets_2/EventSets_2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EventSets_2/EventSets_2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EventSets_2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EventSets_3/EventSets_3.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EventSets_3/EventSets_3.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EventSets_3"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EventSets_4/EventSets_4.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EventSets_4/EventSets_4.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EventSets_4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/EventSets_5/EventSets_5.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/EventSets_5/EventSets_5.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "EventSets_5"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/MachineNames_1/MachineNames_1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/MachineNames_1/MachineNames_1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "MachineNames_1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/SetAccess/SetImpl1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/SetAccess/SetImpl1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "SetAccess"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/SetImpl2/SetImpl2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/SetImpl2/SetImpl2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "SetImpl2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/enum1/enum1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/enum1/enum1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "enum1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/float4/float4.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/float4/float4.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "float4"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/function_Typos/function_Typos.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/function_Typos/function_Typos.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "function_Typos"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/namedDuplicateField/namedtype.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/namedDuplicateField/namedtype.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "namedDuplicateField"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/namedDuplicateField2/namedtype.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/namedDuplicateField2/namedtype.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "namedDuplicateField2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/namedTuple1/namedTuple1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/namedTuple1/namedTuple1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "namedTuple1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/namedTuple2/namedTuple2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/namedTuple2/namedTuple2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "namedTuple2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/nonAtomicDataTypes/nonAtomicDataTypes.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "nonAtomicDataTypes"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/nullComparison/nullType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/nullComparison/nullType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "nullComparison"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/nullTypeAssign/nullType.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/nullTypeAssign/nullType.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "nullTypeAssign"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloadActions/payloadActions.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloadActions/payloadActions.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloadActions"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloadActionsFuns/payloadActionsFuns.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloadActionsFuns/payloadActionsFuns.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloadActionsFuns"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloadEntry/payloadEntry.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloadEntry/payloadEntry.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloadEntry"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloadEntry_1/payloadEntry_1.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloadEntry_1/payloadEntry_1.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloadEntry_1"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloadTransitions/payloadTransitions.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloadTransitions/payloadTransitions.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloadTransitions"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/payloads/payloads.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/payloads/payloads.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "payloads"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/string2/string2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/string2/string2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "string2"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/typedef/typedef.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/typedef/typedef.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "typedef"
+    },
+    {
+      "path": "testdata/Feature4DataTypes/StaticError/typedef2/typedef2.p",
+      "original_path": "Tst/RegressionTests/Feature4DataTypes/StaticError/typedef2/typedef2.p",
+      "feature": "Feature4DataTypes",
+      "expected_outcome": "static_error",
+      "name": "typedef2"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/Elevator/Elevator.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/Elevator/Elevator.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "Elevator"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/ElevatorMod/Elevator.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/ElevatorMod/Elevator.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "ElevatorMod"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/InterfaceTest/interface1.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/InterfaceTest/interface1.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "InterfaceTest"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/OSR/Headers.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/OSR/Headers.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "OSR"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/OSR/Link.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/OSR/Link.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "OSR"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/OSR/OS.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/OSR/OS.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "OSR"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/OSR/OSRDriver.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/OSR/OSRDriver.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "OSR"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/OSR/User.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/OSR/User.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "OSR"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/PingPongDingDongMod/Header.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/PingPongDingDongMod/Header.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "PingPongDingDongMod"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/PingPongDingDongMod/Link.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/PingPongDingDongMod/Link.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "PingPongDingDongMod"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/PingPongDingDongMod/Ping.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/PingPongDingDongMod/Ping.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "PingPongDingDongMod"
+    },
+    {
+      "path": "testdata/Feature5ModuleSystem/Correct/PingPongDingDongMod/Pong.p",
+      "original_path": "Tst/RegressionTests/Feature5ModuleSystem/Correct/PingPongDingDongMod/Pong.p",
+      "feature": "Feature5ModuleSystem",
+      "expected_outcome": "correct",
+      "name": "PingPongDingDongMod"
+    },
+    {
+      "path": "testdata/Integration/Correct/BoundedAsync/boundedasync.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/BoundedAsync/boundedasync.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "BoundedAsync"
+    },
+    {
+      "path": "testdata/Integration/Correct/German/German.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/German/German.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "German"
+    },
+    {
+      "path": "testdata/Integration/Correct/PingPong/PingPong.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/PingPong/PingPong.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "PingPong"
+    },
+    {
+      "path": "testdata/Integration/Correct/PingPongDefer/PingPongDefer.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/PingPongDefer/PingPongDefer.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "PingPongDefer"
+    },
+    {
+      "path": "testdata/Integration/Correct/PingPongDingDong/PingPongDingDong.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/PingPongDingDong/PingPongDingDong.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "PingPongDingDong"
+    },
+    {
+      "path": "testdata/Integration/Correct/PingPongMonitor/PingPongMonitor.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/PingPongMonitor/PingPongMonitor.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "PingPongMonitor"
+    },
+    {
+      "path": "testdata/Integration/Correct/PingPongNonDet/PingPongNonDet.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/PingPongNonDet/PingPongNonDet.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "PingPongNonDet"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_18/UnhandledEventDeferred.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_18/UnhandledEventDeferred.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_18"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_19/UnhandledEventIgnored.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_19/UnhandledEventIgnored.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_19"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_2/RaiseSendInEntry.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_2/RaiseSendInEntry.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_2"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_31/RaisedHalt.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_31/RaisedHalt.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_31"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_4/SendInExitNotExecuted.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_4/SendInExitNotExecuted.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_4"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_OneMachine_7/SendInExitUnhandledHalt.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_OneMachine_7/SendInExitUnhandledHalt.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_OneMachine_7"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_1/EventSentAfterSentHalt.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_1/EventSentAfterSentHalt.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_1"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_14/NewMonitor_v.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_14/NewMonitor_v.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_14"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_3/EventSentAfterSentHaltHandled.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_3/EventSentAfterSentHaltHandled.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_3"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_5/RaisedHalt.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_5/RaisedHalt.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_5"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_7/RaisedHalt_bugFound.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_7/RaisedHalt_bugFound.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_7"
+    },
+    {
+      "path": "testdata/Integration/Correct/SEM_TwoMachines_8/HaltTrigger4Do.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/SEM_TwoMachines_8/HaltTrigger4Do.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "SEM_TwoMachines_8"
+    },
+    {
+      "path": "testdata/Integration/Correct/TestMapSet/TestMapSet.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/TestMapSet/TestMapSet.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "TestMapSet"
+    },
+    {
+      "path": "testdata/Integration/Correct/TokenRing/TokenRing.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/TokenRing/TokenRing.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "TokenRing"
+    },
+    {
+      "path": "testdata/Integration/Correct/openwsn1/openwsn1.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/openwsn1/openwsn1.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "openwsn1"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongExp/pingPongExp.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongExp/pingPongExp.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongExp"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongForeach/pingPongForeach.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongForeach/pingPongForeach.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongForeach"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongNew/pingPongNew.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongNew/pingPongNew.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongNew"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongOld/pingPongOld.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongOld/pingPongOld.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongOld"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongReceive1/pingPongReceive1.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongReceive1/pingPongReceive1.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive1"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongReceive2/pingPongReceive2.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongReceive2/pingPongReceive2.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive2"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongReceive3/pingPongReceive3.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongReceive3/pingPongReceive3.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive3"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongReceive4/pingPongReceive4.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongReceive4/pingPongReceive4.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongReceive4"
+    },
+    {
+      "path": "testdata/Integration/Correct/pingPongTuple/pingPongTuple.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/pingPongTuple/pingPongTuple.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "pingPongTuple"
+    },
+    {
+      "path": "testdata/Integration/Correct/two-phase-commit/two-phase-commit.p",
+      "original_path": "Tst/RegressionTests/Integration/Correct/two-phase-commit/two-phase-commit.p",
+      "feature": "Integration",
+      "expected_outcome": "correct",
+      "name": "two-phase-commit"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Actions_1/Actions_1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Actions_1/Actions_1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Actions_1"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Actions_3/Actions_3.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Actions_3/Actions_3.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Actions_3"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Actions_5/Actions_5.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Actions_5/Actions_5.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Actions_5"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Actions_6/Actions_6.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Actions_6/Actions_6.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Actions_6"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Multi_Paxos_3/Multi_Paxos_3.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Multi_Paxos_3/Multi_Paxos_3.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Multi_Paxos_3"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/Multi_Paxos_4/Multi_Paxos_4.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/Multi_Paxos_4/Multi_Paxos_4.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "Multi_Paxos_4"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/PingPongWithCall/PingPongWithCall.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/PingPongWithCall/PingPongWithCall.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "PingPongWithCall"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_1/SendRaiseInEntry.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_1/SendRaiseInEntry.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_1"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_10/Push.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_10/Push.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_10"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_11/PushImplicitPopWithSend.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_11/PushImplicitPopWithSend.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_11"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_12/PushExplicitPop.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_12/PushExplicitPop.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_12"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_13/PushTransInheritance.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_13/PushTransInheritance.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_13"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_14/GotoTransInheritance.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_14/GotoTransInheritance.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_14"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_15/ImplicitPopExit.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_15/ImplicitPopExit.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_15"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_16/ExplicitPopExit.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_16/ExplicitPopExit.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_16"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_20/BugReproIdenticalTerms.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_20/BugReproIdenticalTerms.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_20"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_21/BugReproIdenticalTerms_workaround.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_21/BugReproIdenticalTerms_workaround.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_21"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_25/NewInExit.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_25/NewInExit.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_25"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_28/DeferIgnore2.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_28/DeferIgnore2.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_28"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_3/SendInEntry.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_3/SendInEntry.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_3"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_32/RaisedHaltHandled.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_32/RaisedHaltHandled.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_32"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_36/NullEventHandler1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_36/NullEventHandler1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_36"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_37/NullEventHandler2.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_37/NullEventHandler2.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_37"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_38/NullHandlerInheritedByPushTr.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_38/NullHandlerInheritedByPushTr.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_38"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_39/TopNullHandlerOverridesInherited.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_39/TopNullHandlerOverridesInherited.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_39"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_40/lvalues_runtimeError.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_40/lvalues_runtimeError.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_40"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_41/NullHandlerInLoop.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_41/NullHandlerInLoop.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_41"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_42/NullTriggerPayload.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_42/NullTriggerPayload.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_42"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_5/SendInExitUnhandledEvent.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_5/SendInExitUnhandledEvent.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_5"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_6/SendInExitHandledEvent.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_6/SendInExitHandledEvent.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_6"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_8/GotoToItself.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_8/GotoToItself.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_8"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_OneMachine_9/PushItself.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_OneMachine_9/PushItself.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_OneMachine_9"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_10/NonConstantEventExpr1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_10/NonConstantEventExpr1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_10"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_12/NonConstantEventExprMonitor1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_12/NonConstantEventExprMonitor1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_12"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_15/MonitorInvocationEventExprPayload.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_15/MonitorInvocationEventExprPayload.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_15"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_16/NonConstantEventExpr2.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_16/NonConstantEventExpr2.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_16"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_17/EventExprSemantics.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_17/EventExprSemantics.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_17"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_18/EventExprSemantics1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_18/EventExprSemantics1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_18"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_19/EventExprSemantics2.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_19/EventExprSemantics2.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_19"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_2/EventSentAfterSentHalt_v.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_2/EventSentAfterSentHalt_v.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_2"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_4/EventSentAfterSentHaltHandled_v.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_4/EventSentAfterSentHaltHandled_v.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_4"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_6/RaisedHaltHandled.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_6/RaisedHaltHandled.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_6"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/SEM_TwoMachines_9/NonConstantEventExpr.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/SEM_TwoMachines_9/NonConstantEventExpr.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "SEM_TwoMachines_9"
+    },
+    {
+      "path": "testdata/Integration/DynamicError/two-phase-commit_1/two-phase-commit_1.p",
+      "original_path": "Tst/RegressionTests/Integration/DynamicError/two-phase-commit_1/two-phase-commit_1.p",
+      "feature": "Integration",
+      "expected_outcome": "dynamic_error",
+      "name": "two-phase-commit_1"
+    },
+    {
+      "path": "testdata/Integration/StaticError/TokenRing_Typos/TokenRing_Typos.p",
+      "original_path": "Tst/RegressionTests/Integration/StaticError/TokenRing_Typos/TokenRing_Typos.p",
+      "feature": "Integration",
+      "expected_outcome": "static_error",
+      "name": "TokenRing_Typos"
+    },
+    {
+      "path": "testdata/Liveness/Correct/Liveness_1/Liveness_1.p",
+      "original_path": "Tst/RegressionTests/Liveness/Correct/Liveness_1/Liveness_1.p",
+      "feature": "Liveness",
+      "expected_outcome": "correct",
+      "name": "Liveness_1"
+    },
+    {
+      "path": "testdata/Liveness/Correct/Liveness_1_falsePass/Liveness_1_falsePass.p",
+      "original_path": "Tst/RegressionTests/Liveness/Correct/Liveness_1_falsePass/Liveness_1_falsePass.p",
+      "feature": "Liveness",
+      "expected_outcome": "correct",
+      "name": "Liveness_1_falsePass"
+    },
+    {
+      "path": "testdata/Liveness/Correct/Liveness_FAIRNONDET/Liveness_FAIRNONDET.p",
+      "original_path": "Tst/RegressionTests/Liveness/Correct/Liveness_FAIRNONDET/Liveness_FAIRNONDET.p",
+      "feature": "Liveness",
+      "expected_outcome": "correct",
+      "name": "Liveness_FAIRNONDET"
+    },
+    {
+      "path": "testdata/Liveness/Correct/Liveness_FAIRNONDET2/Liveness_FAIRNONDET.p",
+      "original_path": "Tst/RegressionTests/Liveness/Correct/Liveness_FAIRNONDET2/Liveness_FAIRNONDET.p",
+      "feature": "Liveness",
+      "expected_outcome": "correct",
+      "name": "Liveness_FAIRNONDET2"
+    },
+    {
+      "path": "testdata/Liveness/Correct/WarmState_1/Liveness_2_WarmState.p",
+      "original_path": "Tst/RegressionTests/Liveness/Correct/WarmState_1/Liveness_2_WarmState.p",
+      "feature": "Liveness",
+      "expected_outcome": "correct",
+      "name": "WarmState_1"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/InfiniteLoopInAtomicBlock/InfiniteLoopInAtomicBlock.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/InfiniteLoopInAtomicBlock/InfiniteLoopInAtomicBlock.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "InfiniteLoopInAtomicBlock"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_10/Liveness_10.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_10/Liveness_10.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_10"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_1_WarmState/Liveness_1_WarmState.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_1_WarmState/Liveness_1_WarmState.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_1_WarmState"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_2/Liveness_2.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_2/Liveness_2.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_2"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_2_LoopMachineAdded/Liveness_2_LoopMachineAdded.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_2_LoopMachineAdded/Liveness_2_LoopMachineAdded.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_2_LoopMachineAdded"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_2_bugFound/Liveness_2_bugFound.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_2_bugFound/Liveness_2_bugFound.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_2_bugFound"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_3/Liveness_3.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_3/Liveness_3.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_3"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_4/Liveness_4.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_4/Liveness_4.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_4"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_5/Server.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_5/Server.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_5"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_5_deadlock/Server.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_5_deadlock/Server.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_5_deadlock"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_6/Server1.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_6/Server1.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_6"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_6_deadlock/Server1.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_6_deadlock/Server1.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_6_deadlock"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_7/Liveness_4.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_7/Liveness_4.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_7"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_9/Liveness_9.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_9/Liveness_9.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_9"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_NONDET/Liveness_NONDET.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_NONDET/Liveness_NONDET.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_NONDET"
+    },
+    {
+      "path": "testdata/Liveness/DynamicError/Liveness_NONDET2/Liveness_NONDET.p",
+      "original_path": "Tst/RegressionTests/Liveness/DynamicError/Liveness_NONDET2/Liveness_NONDET.p",
+      "feature": "Liveness",
+      "expected_outcome": "dynamic_error",
+      "name": "Liveness_NONDET2"
+    }
+  ]
+}
