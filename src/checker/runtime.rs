@@ -206,6 +206,15 @@ impl Runtime {
                 .map(|(i, _)| i)
                 .collect();
 
+            trace!("scheduling loop step={}: enabled={:?}, queues={:?}",
+                self.steps,
+                enabled.iter().map(|&i| format!("{}[{}]q={}", self.instances[i].machine_name, i, self.instances[i].event_queue.len())).collect::<Vec<_>>(),
+                self.instances.iter().enumerate()
+                    .filter(|(_, inst)| !inst.event_queue.is_empty())
+                    .map(|(i, inst)| format!("{}[{}]={}", inst.machine_name, i, inst.event_queue.len()))
+                    .collect::<Vec<_>>()
+            );
+
             if enabled.is_empty() {
                 // Check for deadlock: any non-halted machine with non-empty queue
                 let blocked: Vec<usize> = self.instances.iter().enumerate()
@@ -715,15 +724,27 @@ impl Runtime {
                 self.set_lvalue(id, lvalue, target, env)?;
                 Ok(HandlerOutcome::Normal)
             }
-            Stmt::Remove { lvalue, key, .. } => {
+            Stmt::Remove { lvalue, key, span } => {
                 let k = self.eval_expr(id, machine, key, env)?;
                 let mut target = self.read_lvalue(id, lvalue, env);
                 match &mut target {
                     PValue::Seq(seq) => {
                         let i = k.as_int().unwrap_or(0) as usize;
-                        if i < seq.len() { seq.remove(i); }
+                        if i >= seq.len() {
+                            return Err(CheckError {
+                                message: format!("index out of bounds: removing index {i} from sequence of size {}", seq.len()),
+                            });
+                        }
+                        seq.remove(i);
                     }
-                    PValue::Map(map) => { map.remove(&k); }
+                    PValue::Map(map) => {
+                        if !map.contains_key(&k) {
+                            return Err(CheckError {
+                                message: format!("key not found in map: {k}"),
+                            });
+                        }
+                        map.remove(&k);
+                    }
                     PValue::Set(set) => { set.retain(|v| v != &k); }
                     _ => {}
                 }
