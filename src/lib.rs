@@ -1,2 +1,2 @@
-pub mod compiler;
 pub mod checker;
+pub mod compiler;

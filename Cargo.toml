@@ -5,6 +5,12 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+indexmap = "2.13.0"
+logos = "0.16.1"
+miette = { version = "7.6.0", features = ["fancy"] }
+rand = "0.10.0"
+smol_str = "0.3.6"
+thiserror = "2.0.18"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }
