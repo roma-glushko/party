@@ -313,9 +313,16 @@ impl Runtime {
             liveness_temperature: 0,
         });
 
-        // Run the start state's entry handler
-        let state = machine.body.states.iter().find(|s| s.name == start_state).unwrap().clone();
-        self.run_entry_handler(id, &state, payload)?;
+        // Queue the init event — entry handler will run when the scheduler steps this machine.
+        // For spec monitors, run entry immediately (monitors are synchronous).
+        // For the main machine (first created), also run immediately to bootstrap.
+        if machine.is_spec || id == 0 {
+            let state = machine.body.states.iter().find(|s| s.name == start_state).unwrap().clone();
+            self.run_entry_handler(id, &state, payload)?;
+        } else {
+            // Queue a special init event so the scheduler runs the entry handler later
+            self.instances[id].event_queue.push_back(("__init__".to_string(), payload));
+        }
 
         Ok(id)
     }
@@ -330,6 +337,17 @@ impl Runtime {
         let Some((event_name, payload)) = event else {
             return Ok(());
         };
+
+        // Handle init event — run start state entry handler
+        if event_name == "__init__" {
+            let machine_name = self.instances[id].machine_name.clone();
+            let current_state = self.instances[id].current_state.clone();
+            let machine = self.machines.get(&machine_name).unwrap().clone();
+            let state = machine.body.states.iter()
+                .find(|s| s.name == current_state).unwrap().clone();
+            self.run_entry_handler(id, &state, payload)?;
+            return Ok(());
+        }
 
         // Handle halt event
         if event_name == "halt" {
@@ -714,7 +732,11 @@ impl Runtime {
                 for a in args {
                     arg_vals.push(self.eval_expr(id, machine, a, env)?);
                 }
-                let payload = arg_vals.into_iter().next();
+                let payload = match arg_vals.len() {
+                    0 => None,
+                    1 => Some(arg_vals.into_iter().next().unwrap()),
+                    _ => Some(PValue::Tuple(arg_vals)),
+                };
                 self.create_machine(interface, payload)?;
                 Ok(HandlerOutcome::Normal)
             }
@@ -1049,6 +1071,11 @@ impl Runtime {
                         let i = idx_val.as_int().unwrap_or(0) as usize;
                         Ok(seq.get(i).cloned().unwrap_or(PValue::Null))
                     }
+                    PValue::Set(set) => {
+                        // Set indexing by position
+                        let i = idx_val.as_int().unwrap_or(0) as usize;
+                        Ok(set.get(i).cloned().unwrap_or(PValue::Null))
+                    }
                     PValue::Map(map) => {
                         Ok(map.get(&idx_val).cloned().unwrap_or(PValue::Null))
                     }
@@ -1087,7 +1114,11 @@ impl Runtime {
                 for a in args {
                     arg_vals.push(self.eval_expr(id, machine, a, env)?);
                 }
-                let payload = arg_vals.into_iter().next();
+                let payload = match arg_vals.len() {
+                    0 => None,
+                    1 => Some(arg_vals.into_iter().next().unwrap()),
+                    _ => Some(PValue::Tuple(arg_vals)),
+                };
                 let new_id = self.create_machine(interface, payload)?;
                 Ok(PValue::MachineRef(new_id))
             }
@@ -1178,7 +1209,7 @@ impl Runtime {
                     match val {
                         PValue::Int(n) => {
                             if n <= 0 {
-                                return Err(CheckError { message: "choose: argument must be positive".to_string() });
+                                return Ok(PValue::Int(0));
                             }
                             if n > 10000 {
                                 return Err(CheckError { message: format!("choose: argument {n} exceeds maximum of 10000") });
@@ -1280,6 +1311,7 @@ impl Runtime {
             },
             BinOp::Mod => match (l, r) {
                 (PValue::Int(a), PValue::Int(b)) if *b != 0 => Ok(PValue::Int(a % b)),
+                (PValue::Float(a), PValue::Float(b)) if b.0 != 0.0 => Ok(PValue::Float(OrderedFloat(a.0 % b.0))),
                 _ => Ok(PValue::Int(0)),
             },
             BinOp::Eq => Ok(PValue::Bool(l == r)),
@@ -1429,8 +1461,19 @@ impl Runtime {
             ),
             PType::Named(name) => {
                 if let Some(elems) = self.enums.get(name) {
-                    if let Some(first) = elems.first() {
-                        return PValue::EnumVal(name.clone(), first.clone());
+                    // Default enum value is the element with the lowest numeric value
+                    let mut best_elem = elems.first().cloned();
+                    let mut best_val = i64::MAX;
+                    for elem in elems {
+                        if let Some(&val) = self.enum_values.get(elem) {
+                            if val < best_val {
+                                best_val = val;
+                                best_elem = Some(elem.clone());
+                            }
+                        }
+                    }
+                    if let Some(elem) = best_elem {
+                        return PValue::EnumVal(name.clone(), elem);
                     }
                 }
                 if let Some(td) = self.typedefs.get(name) {
