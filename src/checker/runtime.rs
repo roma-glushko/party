@@ -17,6 +17,8 @@ enum HandlerOutcome {
     GotoState(String, Option<PValue>), // state name, payload
     Halted,
     Return(Option<PValue>),
+    Break,
+    Continue,
 }
 
 /// Error found during model checking.
@@ -51,6 +53,8 @@ pub struct Runtime {
     enums: HashMap<String, Vec<String>>,
     /// Enum element -> enum type name.
     enum_elements: HashMap<String, String>,
+    /// Enum element -> declared integer value (for numbered enums).
+    enum_values: HashMap<String, i64>,
     /// Type definitions.
     typedefs: HashMap<String, PType>,
     /// Global functions (not in any machine).
@@ -72,6 +76,7 @@ impl Runtime {
             events: HashMap::new(),
             enums: HashMap::new(),
             enum_elements: HashMap::new(),
+            enum_values: HashMap::new(),
             typedefs: HashMap::new(),
             global_funs: HashMap::new(),
             instances: Vec::new(),
@@ -89,8 +94,11 @@ impl Runtime {
                     }
                     TopDecl::EnumTypeDef(e) => {
                         let elems: Vec<String> = e.elements.iter().map(|el| el.name.clone()).collect();
-                        for el in &elems {
-                            rt.enum_elements.insert(el.clone(), e.name.clone());
+                        for (i, el) in e.elements.iter().enumerate() {
+                            rt.enum_elements.insert(el.name.clone(), e.name.clone());
+                            // Store declared value if present, otherwise use index
+                            let val = el.value.unwrap_or(i as i64);
+                            rt.enum_values.insert(el.name.clone(), val);
                         }
                         rt.enums.insert(e.name.clone(), elems);
                     }
@@ -336,7 +344,7 @@ impl Runtime {
                     }
                     let outcome = self.exec_body(id, &machine, &handler.body, &mut env)?;
                     match outcome {
-                        HandlerOutcome::Normal | HandlerOutcome::Return(None) => {}
+                        HandlerOutcome::Normal | HandlerOutcome::Return(None) | HandlerOutcome::Break | HandlerOutcome::Continue => {}
                         HandlerOutcome::Raised(event, payload) => {
                             self.handle_outcome(id, HandlerOutcome::Raised(event, payload))?;
                         }
@@ -416,7 +424,7 @@ impl Runtime {
 
     fn handle_outcome(&mut self, id: usize, outcome: HandlerOutcome) -> Result<(), CheckError> {
         match outcome {
-            HandlerOutcome::Normal | HandlerOutcome::Return(_) => Ok(()),
+            HandlerOutcome::Normal | HandlerOutcome::Return(_) | HandlerOutcome::Break | HandlerOutcome::Continue => Ok(()),
             HandlerOutcome::Raised(event, payload) => {
                 if event == "halt" {
                     self.instances[id].halted = true;
@@ -486,7 +494,10 @@ impl Runtime {
             Stmt::Compound(stmts, _) => {
                 for s in stmts {
                     let o = self.exec_stmt(id, machine, s, env)?;
-                    if !matches!(o, HandlerOutcome::Normal) { return Ok(o); }
+                    match o {
+                        HandlerOutcome::Normal => {}
+                        other => return Ok(other),
+                    }
                 }
                 Ok(HandlerOutcome::Normal)
             }
@@ -517,8 +528,8 @@ impl Runtime {
                 };
                 Ok(HandlerOutcome::Return(val))
             }
-            Stmt::Break(_) => Ok(HandlerOutcome::Return(None)), // Handled by loop
-            Stmt::Continue(_) => Ok(HandlerOutcome::Return(None)), // Handled by loop
+            Stmt::Break(_) => Ok(HandlerOutcome::Break),
+            Stmt::Continue(_) => Ok(HandlerOutcome::Continue),
             Stmt::Assign { lvalue, rvalue, .. } => {
                 let val = self.eval_expr(id, machine, rvalue, env)?;
                 self.set_lvalue(id, lvalue, val, env)?;
@@ -576,8 +587,8 @@ impl Runtime {
                     if !c.to_bool() { break; }
                     let o = self.exec_stmt(id, machine, body, env)?;
                     match o {
-                        HandlerOutcome::Normal => {}
-                        HandlerOutcome::Return(None) => break, // break or continue
+                        HandlerOutcome::Normal | HandlerOutcome::Continue => {}
+                        HandlerOutcome::Break => break,
                         other => return Ok(other),
                     }
                     self.steps += 1;
@@ -597,8 +608,8 @@ impl Runtime {
                     env.insert(item.clone(), elem);
                     let o = self.exec_stmt(id, machine, body, env)?;
                     match o {
-                        HandlerOutcome::Normal => {}
-                        HandlerOutcome::Return(None) => break,
+                        HandlerOutcome::Normal | HandlerOutcome::Continue => {}
+                        HandlerOutcome::Break => break,
                         other => return Ok(other),
                     }
                 }
@@ -638,7 +649,7 @@ impl Runtime {
                     }
                 }
                 match result {
-                    HandlerOutcome::Return(_) | HandlerOutcome::Normal => Ok(HandlerOutcome::Normal),
+                    HandlerOutcome::Return(_) | HandlerOutcome::Normal | HandlerOutcome::Break | HandlerOutcome::Continue => Ok(HandlerOutcome::Normal),
                     other => Ok(other),
                 }
             }
@@ -961,10 +972,18 @@ impl Runtime {
                     PValue::Int(i) => Ok(PValue::Int(i)), // int to float handled below
                     PValue::Float(f) => Ok(PValue::Int(f.0 as i64)),
                     PValue::EnumVal(_, ref elem) => {
-                        // enum to int: find the index
+                        // enum to int: use declared value if available, else index
                         if let Some(enum_name) = self.enum_elements.get(elem) {
+                            // Check for numbered enum values
+                            let machines_copy: Vec<_> = self.machines.keys().cloned().collect();
+                            let _ = machines_copy;
+                            // Look through all programs' enum declarations for numbered values
                             if let Some(elems) = self.enums.get(enum_name) {
                                 let idx = elems.iter().position(|e| e == elem).unwrap_or(0);
+                                // Check if enum has declared values
+                                if let Some(val) = self.enum_values.get(elem) {
+                                    return Ok(PValue::Int(*val));
+                                }
                                 return Ok(PValue::Int(idx as i64));
                             }
                         }
