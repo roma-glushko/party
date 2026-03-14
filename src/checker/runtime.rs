@@ -7,7 +7,16 @@ use rand::Rng;
 use rand::RngExt;
 
 use crate::compiler::ast::*;
+use super::scheduler::DfsScheduler;
 use super::value::{PValue, OrderedFloat};
+
+/// Scheduling mode for the model checker.
+pub enum SchedulingMode {
+    /// Random scheduling with optional nondet bias.
+    Random { bias: Option<bool> },
+    /// Systematic DFS exploration with backtracking.
+    Dfs,
+}
 
 /// Outcome of executing a handler (entry, exit, event handler).
 #[derive(Debug)]
@@ -80,6 +89,10 @@ pub struct Runtime {
     /// Bias for unfair nondeterministic choices ($).
     /// None = random, Some(true) = always true, Some(false) = always false.
     nondet_bias: Option<bool>,
+    /// Scheduling mode.
+    scheduling_mode: SchedulingMode,
+    /// DFS scheduler (only used in DFS mode, shared across iterations).
+    dfs_scheduler: Option<DfsScheduler>,
 }
 
 impl Runtime {
@@ -99,6 +112,8 @@ impl Runtime {
             liveness_temperature_threshold: 100,
             fair_nondet_counter: 0,
             nondet_bias: None,
+            scheduling_mode: SchedulingMode::Random { bias: None },
+            dfs_scheduler: None,
         };
 
         // Register all declarations
@@ -140,6 +155,25 @@ impl Runtime {
     /// Set the bias for unfair nondeterministic choices ($).
     pub fn set_nondet_bias(&mut self, bias: Option<bool>) {
         self.nondet_bias = bias;
+    }
+
+    /// Enable DFS scheduling mode with a shared scheduler.
+    pub fn set_dfs_scheduler(&mut self, scheduler: DfsScheduler) {
+        self.dfs_scheduler = Some(scheduler);
+        self.scheduling_mode = SchedulingMode::Dfs;
+    }
+
+    /// Take the DFS scheduler out (to preserve state across iterations).
+    pub fn take_dfs_scheduler(&mut self) -> Option<DfsScheduler> {
+        self.dfs_scheduler.take()
+    }
+
+    /// Reset runtime state for a new iteration (keeps declarations, clears instances).
+    pub fn reset(&mut self) {
+        self.instances.clear();
+        self.steps = 0;
+        self.fair_nondet_counter = 0;
+        // Reset liveness temperature on all instances (none exist after clear)
     }
 
     /// Run the model checker. Returns Ok if no violations found, Err with description if found.
@@ -186,11 +220,22 @@ impl Runtime {
                 break; // All quiescent
             }
 
-            // Pick a random enabled machine
-            let idx = if enabled.len() == 1 {
-                enabled[0]
-            } else {
-                enabled[self.rng.random_range(0..enabled.len())]
+            // Pick the next machine to schedule
+            let idx = match &mut self.dfs_scheduler {
+                Some(dfs) => {
+                    match dfs.get_next_operation(&enabled) {
+                        Some(id) => id,
+                        None => break, // DFS says stop
+                    }
+                }
+                None => {
+                    // Random scheduling
+                    if enabled.len() == 1 {
+                        enabled[0]
+                    } else {
+                        enabled[self.rng.random_range(0..enabled.len())]
+                    }
+                }
             };
 
             self.step_machine(idx)?;
@@ -618,6 +663,7 @@ impl Runtime {
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::While { cond, body, .. } => {
+                let mut loop_iters = 0;
                 loop {
                     let c = self.eval_expr(id, machine, cond, env)?;
                     if !c.to_bool() { break; }
@@ -627,8 +673,10 @@ impl Runtime {
                         HandlerOutcome::Break => break,
                         other => return Ok(other),
                     }
-                    self.steps += 1;
-                    if self.steps >= self.max_steps { break; }
+                    loop_iters += 1;
+                    // Cap loop iterations to prevent infinite loops,
+                    // but don't count as scheduling steps
+                    if loop_iters > 100000 { break; }
                 }
                 Ok(HandlerOutcome::Normal)
             }
@@ -930,16 +978,20 @@ impl Runtime {
             Expr::This(_) => Ok(PValue::MachineRef(id)),
             Expr::HaltEvent(_) => Ok(PValue::EventId("halt".to_string())),
             Expr::Nondet(_) => {
-                // Unfair nondeterminism: can be biased to test liveness
-                let val = match self.nondet_bias {
-                    Some(b) => b,
-                    None => self.rng.random_bool(0.5),
+                let val = if let Some(dfs) = &mut self.dfs_scheduler {
+                    dfs.get_next_boolean_choice().unwrap_or(false)
+                } else {
+                    match self.nondet_bias {
+                        Some(b) => b,
+                        None => self.rng.random_bool(0.5),
+                    }
                 };
                 Ok(PValue::Bool(val))
             }
             Expr::FairNondet(_) => {
-                // Fair nondeterminism: alternate to ensure both branches are explored.
-                // This models the fairness constraint that both choices must eventually occur.
+                // Fair nondeterminism always alternates to model fairness constraint.
+                // Unlike unfair $, which the DFS scheduler explores systematically,
+                // $$ guarantees both branches are eventually taken.
                 self.fair_nondet_counter += 1;
                 Ok(PValue::Bool(self.fair_nondet_counter % 2 == 0))
             }
@@ -1125,21 +1177,60 @@ impl Runtime {
                     let val = self.eval_expr(id, machine, a, env)?;
                     match val {
                         PValue::Int(n) => {
-                            if n <= 0 { Ok(PValue::Int(0)) }
-                            else { Ok(PValue::Int(self.rng.random_range(0..n))) }
+                            if n <= 0 {
+                                return Err(CheckError { message: "choose: argument must be positive".to_string() });
+                            }
+                            if n > 10000 {
+                                return Err(CheckError { message: format!("choose: argument {n} exceeds maximum of 10000") });
+                            }
+                            if let Some(dfs) = &mut self.dfs_scheduler {
+                                Ok(PValue::Int(dfs.get_next_integer_choice(n).unwrap_or(0)))
+                            } else {
+                                Ok(PValue::Int(self.rng.random_range(0..n)))
+                            }
                         }
                         PValue::Seq(s) if !s.is_empty() => {
-                            let idx = self.rng.random_range(0..s.len());
+                            if s.len() > 10000 {
+                                return Err(CheckError { message: format!("choose: collection size {} exceeds maximum of 10000", s.len()) });
+                            }
+                            let idx = if let Some(dfs) = &mut self.dfs_scheduler {
+                                dfs.get_next_integer_choice(s.len() as i64).unwrap_or(0) as usize
+                            } else {
+                                self.rng.random_range(0..s.len())
+                            };
                             Ok(s[idx].clone())
                         }
                         PValue::Set(s) if !s.is_empty() => {
-                            let idx = self.rng.random_range(0..s.len());
+                            if s.len() > 10000 {
+                                return Err(CheckError { message: format!("choose: collection size {} exceeds maximum of 10000", s.len()) });
+                            }
+                            let idx = if let Some(dfs) = &mut self.dfs_scheduler {
+                                dfs.get_next_integer_choice(s.len() as i64).unwrap_or(0) as usize
+                            } else {
+                                self.rng.random_range(0..s.len())
+                            };
                             Ok(s[idx].clone())
                         }
                         PValue::Map(m) if !m.is_empty() => {
+                            if m.len() > 10000 {
+                                return Err(CheckError { message: format!("choose: collection size {} exceeds maximum of 10000", m.len()) });
+                            }
                             let keys: Vec<_> = m.keys().collect();
-                            let idx = self.rng.random_range(0..keys.len());
+                            let idx = if let Some(dfs) = &mut self.dfs_scheduler {
+                                dfs.get_next_integer_choice(keys.len() as i64).unwrap_or(0) as usize
+                            } else {
+                                self.rng.random_range(0..keys.len())
+                            };
                             Ok(keys[idx].clone())
+                        }
+                        PValue::Seq(s) if s.is_empty() => {
+                            Err(CheckError { message: "choose: cannot choose from empty sequence".to_string() })
+                        }
+                        PValue::Set(s) if s.is_empty() => {
+                            Err(CheckError { message: "choose: cannot choose from empty set".to_string() })
+                        }
+                        PValue::Map(m) if m.is_empty() => {
+                            Err(CheckError { message: "choose: cannot choose from empty map".to_string() })
                         }
                         _ => Ok(PValue::Null),
                     }
