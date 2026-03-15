@@ -429,7 +429,8 @@ impl Runtime {
 
         // Queue the init event — entry handler will run when the scheduler steps this machine.
         // For spec monitors, run entry immediately (monitors are synchronous).
-        // For the main machine, also run immediately to bootstrap.
+        // Spec monitors and main machine run entry immediately.
+        // Other machines run entry via __init__ from scheduler.
         let is_main = self.main_machine_name.as_deref() == Some(name);
         if machine.is_spec || is_main {
             let state = machine.body.states.iter().find(|s| s.name == start_state).unwrap().clone();
