@@ -432,6 +432,44 @@ impl Runtime {
         }
     }
 
+    fn is_deferred(&self, id: usize, event_name: &str) -> bool {
+        let machine_name = &self.instances[id].machine_name;
+        let current_state = &self.instances[id].current_state;
+        if let Some(machine) = self.machines.get(machine_name) {
+            if let Some(state) = machine.body.states.iter().find(|s| &s.name == current_state) {
+                for item in &state.items {
+                    if let StateBodyItem::Defer(events, _) = item {
+                        if events.contains(&event_name.to_string()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+
+    fn all_events_deferred(&self, id: usize) -> bool {
+        let queue = &self.instances[id].event_queue;
+        if queue.is_empty() { return false; }
+        queue.iter().all(|(ev, _)| self.is_deferred(id, ev))
+    }
+
+    fn has_null_handler(&self, id: usize) -> bool {
+        let machine_name = &self.instances[id].machine_name;
+        let current_state = &self.instances[id].current_state;
+        if let Some(machine) = self.machines.get(machine_name) {
+            if let Some(state) = machine.body.states.iter().find(|s| &s.name == current_state) {
+                return state.items.iter().any(|item| match item {
+                    StateBodyItem::OnEventDoAction(on) => on.events.contains(&"null".to_string()),
+                    StateBodyItem::OnEventGotoState(on) => on.events.contains(&"null".to_string()),
+                    _ => false,
+                });
+            }
+        }
+        false
+    }
+
     fn find_main_machine(&self) -> Option<String> {
         // First check if there's a machine called "Main"
         if self.machines.contains_key("Main") {
@@ -504,9 +542,32 @@ impl Runtime {
             return Ok(());
         }
 
-        // Dequeue an event, or synthesize null event if queue is empty but null handler exists
+        // Dequeue an event, or synthesize null event if queue is empty
+        // (or all events are deferred) and null handler exists
         let event = self.instances[id].event_queue.pop_front();
         let (event_name, payload) = match event {
+            Some((ref ev, _)) if self.is_deferred(id, ev) => {
+                // Event is deferred — put it back and check for null handler
+                let ep = self.instances[id].event_queue.pop_front();
+                // Actually we already popped it. Put back the original.
+                // Re-insert at back
+                let (ev_name, ev_payload) = event.unwrap();
+                self.instances[id].event_queue.push_back((ev_name, ev_payload));
+                // Check if ALL events in queue are deferred
+                let all_deferred = self.all_events_deferred(id);
+                if all_deferred {
+                    // Synthesize null event
+                    let has_null = self.has_null_handler(id);
+                    if has_null {
+                        ("null".to_string(), None)
+                    } else {
+                        return Ok(()); // All deferred, no null handler — stuck
+                    }
+                } else {
+                    // Some non-deferred event exists, skip the deferred one and try again
+                    return self.step_machine(id);
+                }
+            }
             Some(ep) => ep,
             None => {
                 // Check for null handler
