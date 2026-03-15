@@ -1738,7 +1738,7 @@ impl<'a> TypeChecker<'a> {
             Stmt::While { body, .. } | Stmt::Foreach { body, .. } => {
                 self.check_spec_stmt(body, machine, context);
             }
-            Stmt::FunCall { name, span, .. } => {
+            Stmt::FunCall { name, span: _, .. } => {
                 // Check if the called function contains forbidden operations
                 if let Some(fun) = self.global_funs_ast.get(name).cloned() {
                     if let Some(body) = &fun.body {

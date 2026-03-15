@@ -3,7 +3,6 @@
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
 use log::{debug, trace};
-use rand::Rng;
 use rand::RngExt;
 
 use crate::compiler::ast::*;
@@ -787,7 +786,7 @@ impl Runtime {
                 self.set_lvalue(id, lvalue, target, env)?;
                 Ok(HandlerOutcome::Normal)
             }
-            Stmt::Remove { lvalue, key, span } => {
+            Stmt::Remove { lvalue, key, span: _ } => {
                 let k = self.eval_expr(id, machine, key, env)?;
                 let mut target = self.read_lvalue(id, lvalue, env);
                 match &mut target {

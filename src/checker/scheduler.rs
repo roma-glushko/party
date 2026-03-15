@@ -179,7 +179,7 @@ impl DfsScheduler {
         }
 
         // Phase 2: Backtrack int nondet stack
-        let int_backtracked = self.backtrack_stack_int();
+        let _int_backtracked = self.backtrack_stack_int();
 
         // Phase 3: If both nondet stacks are fully explored, backtrack schedule stack
         let bool_empty = self.bool_nondet_stack.is_empty() || self.all_done_bool();
