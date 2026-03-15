@@ -352,7 +352,6 @@ impl<'a> TypeChecker<'a> {
                     }
                 }
                 StateBodyItem::OnEventGotoState(on) => {
-                    // Validate target state exists (deferred until machine is fully registered)
                     for event in &on.events {
                         info.handlers.push((event.clone(), HandlerKind::Goto(on.target.clone())));
                     }
