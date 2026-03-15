@@ -19,11 +19,13 @@ pub fn check_program(programs: &[Program], source: &str) -> Result<(), Vec<Compi
 // ---- Declarations stored in scope ----
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct EventInfo {
     payload: Option<PResolvedType>,
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct MachineInfo {
     is_spec: bool,
     states: Vec<String>,
@@ -36,6 +38,7 @@ struct MachineInfo {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct StateHandlerInfo {
     entry_param_type: Option<PResolvedType>,
     handlers: Vec<(String, HandlerKind)>, // event name -> kind
@@ -52,6 +55,7 @@ enum HandlerKind {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct FunctionInfo {
     params: Vec<(String, PResolvedType)>,
     ret_type: Option<PResolvedType>,
@@ -66,6 +70,7 @@ struct FunctionInfo {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct EnumInfo {
     elements: Vec<String>,
 }

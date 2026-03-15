@@ -19,6 +19,7 @@ pub enum SchedulingMode {
 
 /// Outcome of executing a handler (entry, exit, event handler).
 #[derive(Debug)]
+#[allow(dead_code)]
 enum HandlerOutcome {
     Normal,
     Raised(String, Option<PValue>),   // event name, payload
