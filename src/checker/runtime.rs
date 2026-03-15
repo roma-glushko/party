@@ -86,6 +86,8 @@ pub struct Runtime {
     /// Counter for fair nondeterministic choices ($$).
     /// Alternates to ensure both branches are explored.
     fair_nondet_counter: usize,
+    /// Name of the main machine (for entry handler bootstrapping).
+    main_machine_name: Option<String>,
     /// Bias for unfair nondeterministic choices ($).
     /// None = random, Some(true) = always true, Some(false) = always false.
     nondet_bias: Option<bool>,
@@ -114,6 +116,7 @@ impl Runtime {
             nondet_bias: None,
             scheduling_mode: SchedulingMode::Random { bias: None },
             dfs_scheduler: None,
+            main_machine_name: None,
         };
 
         // Register all declarations
@@ -173,7 +176,7 @@ impl Runtime {
         self.instances.clear();
         self.steps = 0;
         self.fair_nondet_counter = 0;
-        // Reset liveness temperature on all instances (none exist after clear)
+        self.main_machine_name = None;
     }
 
     /// Run the model checker. Returns Ok if no violations found, Err with description if found.
@@ -182,10 +185,13 @@ impl Runtime {
         let main_machine = self.find_main_machine()
             .ok_or_else(|| CheckError { message: "no main machine found".to_string() })?;
 
-        // Create the main machine instance first (id=0 for consistent machine refs)
+        // Store main machine name for bootstrapping
+        self.main_machine_name = Some(main_machine.clone());
+
+        // Create the main machine instance
         self.create_machine(&main_machine, None)?;
 
-        // Create spec machines (monitors)
+        // Create spec machines (monitors) after main
         let spec_names: Vec<String> = self.machines.iter()
             .filter(|(_, m)| m.is_spec)
             .map(|(name, _)| name.clone())
@@ -338,8 +344,9 @@ impl Runtime {
 
         // Queue the init event — entry handler will run when the scheduler steps this machine.
         // For spec monitors, run entry immediately (monitors are synchronous).
-        // For the main machine (first created), also run immediately to bootstrap.
-        if machine.is_spec || id == 0 {
+        // For the main machine, also run immediately to bootstrap.
+        let is_main = self.main_machine_name.as_deref() == Some(name);
+        if machine.is_spec || is_main {
             let state = machine.body.states.iter().find(|s| s.name == start_state).unwrap().clone();
             self.run_entry_handler(id, &state, payload)?;
         } else {
