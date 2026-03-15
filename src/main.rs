@@ -25,8 +25,8 @@ enum Command {
         #[arg(long = "check")]
         check: bool,
     },
-    /// Compile and run model checking on a P program
-    Check {
+    /// Compile and run formal verification on a P program
+    Verify {
         /// Path to directory or .pproj file containing .p files
         path: PathBuf,
 
@@ -65,7 +65,7 @@ fn main() {
         Command::Compile { path } => {
             run_compile(&path);
         }
-        Command::Check { path, testcase, iterations, max_steps, strategy, replay } => {
+        Command::Verify { path, testcase, iterations, max_steps, strategy, replay } => {
             let program = run_compile(&path);
 
             // Discover test cases from the program
