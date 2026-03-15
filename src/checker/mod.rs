@@ -10,6 +10,7 @@ pub struct CheckResult {
     pub ok: bool,
     pub error: Option<String>,
     pub trace: Vec<trace::TraceEvent>,
+    pub schedule: Option<trace::Schedule>,
 }
 
 /// Run model checking on a compiled P program.
@@ -39,6 +40,7 @@ pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
                 ok: false,
                 error: Some(e.message),
                 trace: rt.tracer.events().to_vec(),
+                schedule: Some(rt.get_schedule()),
             };
         }
         dfs = rt.take_dfs_scheduler().unwrap();
@@ -62,6 +64,7 @@ pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
                 ok: false,
                 error: Some(e.message),
                 trace: rt.tracer.events().to_vec(),
+                schedule: Some(rt.get_schedule()),
             };
         }
     }
@@ -70,5 +73,6 @@ pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
         ok: true,
         error: None,
         trace: Vec::new(),
+        schedule: None,
     }
 }

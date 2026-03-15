@@ -93,6 +93,15 @@ pub struct Runtime {
     same_state_count: usize,
     /// Structured execution trace for counterexample reporting.
     pub tracer: super::trace::Tracer,
+    /// Recorded scheduling choices (for saving to .prun).
+    schedule_log: Vec<usize>,
+    /// Recorded nondeterministic choices.
+    nondet_log: Vec<bool>,
+    /// Replay schedule (if set, overrides random/DFS choices).
+    replay_schedule: Option<super::trace::Schedule>,
+    /// Replay position counters.
+    replay_sched_pos: usize,
+    replay_nondet_pos: usize,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -139,6 +148,11 @@ impl Runtime {
             last_atomic_state: None,
             same_state_count: 0,
             tracer: super::trace::Tracer::new(),
+            schedule_log: Vec::new(),
+            nondet_log: Vec::new(),
+            replay_schedule: None,
+            replay_sched_pos: 0,
+            replay_nondet_pos: 0,
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -325,22 +339,36 @@ impl Runtime {
             }
 
             // Pick the next machine to schedule
-            let idx = match &mut self.dfs_scheduler {
-                Some(dfs) => {
-                    match dfs.get_next_operation(&enabled) {
-                        Some(id) => id,
-                        None => break, // DFS says stop
-                    }
+            let idx = if let Some(ref sched) = self.replay_schedule {
+                // Replay mode: use recorded choice
+                let pos = self.replay_sched_pos;
+                self.replay_sched_pos += 1;
+                if pos < sched.scheduling_choices.len() {
+                    let choice = sched.scheduling_choices[pos];
+                    // Map recorded machine index to enabled list
+                    if enabled.contains(&choice) { choice } else { enabled[0] }
+                } else {
+                    enabled[0]
                 }
-                None => {
-                    // Random scheduling
-                    if enabled.len() == 1 {
-                        enabled[0]
-                    } else {
-                        enabled[self.rng.random_range(0..enabled.len())]
+            } else {
+                match &mut self.dfs_scheduler {
+                    Some(dfs) => {
+                        match dfs.get_next_operation(&enabled) {
+                            Some(id) => id,
+                            None => break,
+                        }
+                    }
+                    None => {
+                        if enabled.len() == 1 {
+                            enabled[0]
+                        } else {
+                            enabled[self.rng.random_range(0..enabled.len())]
+                        }
                     }
                 }
             };
+            // Record this scheduling choice
+            self.schedule_log.push(idx);
 
             self.atomic_steps = 0;
             self.same_state_count = 0;
@@ -475,6 +503,22 @@ impl Runtime {
     /// Get the execution trace as formatted strings.
     pub fn get_trace(&self) -> Vec<String> {
         self.tracer.to_strings()
+    }
+
+    /// Get the recorded schedule for saving/replay.
+    pub fn get_schedule(&self) -> super::trace::Schedule {
+        super::trace::Schedule {
+            scheduling_choices: self.schedule_log.clone(),
+            nondet_choices: self.nondet_log.clone(),
+        }
+    }
+
+    /// Set a replay schedule. When set, scheduling and nondet decisions
+    /// follow the recorded choices instead of random/DFS.
+    pub fn set_schedule(&mut self, schedule: super::trace::Schedule) {
+        self.replay_schedule = Some(schedule);
+        self.replay_sched_pos = 0;
+        self.replay_nondet_pos = 0;
     }
 
     fn find_main_machine(&self) -> Option<String> {
@@ -1470,7 +1514,12 @@ impl Runtime {
             Expr::This(_) => Ok(PValue::MachineRef(id)),
             Expr::HaltEvent(_) => Ok(PValue::EventId("halt".to_string())),
             Expr::Nondet(_) => {
-                let val = if let Some(dfs) = &mut self.dfs_scheduler {
+                let val = if let Some(ref sched) = self.replay_schedule {
+                    // Replay mode
+                    let pos = self.replay_nondet_pos;
+                    self.replay_nondet_pos += 1;
+                    if pos < sched.nondet_choices.len() { sched.nondet_choices[pos] } else { false }
+                } else if let Some(dfs) = &mut self.dfs_scheduler {
                     dfs.get_next_boolean_choice().unwrap_or(false)
                 } else {
                     match self.nondet_bias {
@@ -1478,14 +1527,20 @@ impl Runtime {
                         None => self.rng.random_bool(0.5),
                     }
                 };
+                self.nondet_log.push(val);
                 Ok(PValue::Bool(val))
             }
             Expr::FairNondet(_) => {
-                // Fair nondeterminism always alternates to model fairness constraint.
-                // Unlike unfair $, which the DFS scheduler explores systematically,
-                // $$ guarantees both branches are eventually taken.
-                self.fair_nondet_counter += 1;
-                Ok(PValue::Bool(self.fair_nondet_counter % 2 == 0))
+                let val = if let Some(ref sched) = self.replay_schedule {
+                    let pos = self.replay_nondet_pos;
+                    self.replay_nondet_pos += 1;
+                    if pos < sched.nondet_choices.len() { sched.nondet_choices[pos] } else { false }
+                } else {
+                    self.fair_nondet_counter += 1;
+                    self.fair_nondet_counter % 2 == 0
+                };
+                self.nondet_log.push(val);
+                Ok(PValue::Bool(val))
             }
 
             Expr::Iden(name, _) => {

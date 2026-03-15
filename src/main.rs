@@ -45,6 +45,10 @@ enum Command {
         /// Scheduling strategy (random, dfs)
         #[arg(long = "strategy", default_value = "random")]
         strategy: String,
+
+        /// Replay a previously saved schedule (.prun file)
+        #[arg(long = "replay")]
+        replay: Option<PathBuf>,
     },
 }
 
@@ -61,7 +65,7 @@ fn main() {
         Command::Compile { path } => {
             run_compile(&path);
         }
-        Command::Check { path, testcase, iterations, max_steps, strategy } => {
+        Command::Check { path, testcase, iterations, max_steps, strategy, replay } => {
             let program = run_compile(&path);
 
             // Discover test cases from the program
@@ -89,12 +93,24 @@ fn main() {
             }
 
             let start = Instant::now();
-            println!("Starting model checking ...");
-            println!(
-                "  Strategy: {strategy}, Iterations: {iterations}, Max steps: {max_steps}"
-            );
-
-            let result = plang::checker::check_with_trace(&program);
+            let result = if let Some(ref replay_path) = replay {
+                println!("Replaying schedule from {} ...", replay_path.display());
+                let schedule = plang::checker::trace::Schedule::load(replay_path)
+                    .unwrap_or_else(|e| { eprintln!("Error loading schedule: {e}"); std::process::exit(1); });
+                let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+                rt.set_schedule(schedule);
+                let run_result = rt.run();
+                plang::checker::CheckResult {
+                    ok: run_result.is_ok(),
+                    error: run_result.err().map(|e| e.message),
+                    trace: rt.tracer.events().to_vec(),
+                    schedule: Some(rt.get_schedule()),
+                }
+            } else {
+                println!("Starting model checking ...");
+                println!("  Strategy: {strategy}, Iterations: {iterations}, Max steps: {max_steps}");
+                plang::checker::check_with_trace(&program)
+            };
             let elapsed = start.elapsed();
             println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
             if result.ok {
@@ -120,8 +136,18 @@ fn main() {
                     }
                     eprintln!("=== End Trace ===");
                 }
+                // Save schedule for replay
+                if let Some(ref sched) = result.schedule {
+                    let sched_path = path.with_extension("prun");
+                    if let Err(e) = sched.save(&sched_path) {
+                        eprintln!("Warning: could not save schedule: {e}");
+                    } else {
+                        eprintln!("Schedule saved to: {}", sched_path.display());
+                        eprintln!("Replay with: plang check {} --replay {}", path.display(), sched_path.display());
+                    }
+                }
                 println!("{SEPARATOR}");
-                    std::process::exit(1);
+                std::process::exit(1);
             }
             println!("{SEPARATOR}");
         }
