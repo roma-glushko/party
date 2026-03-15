@@ -1246,7 +1246,7 @@ impl Runtime {
                     let mut found = None;
                     for (qi, (ev, _)) in queue.iter().enumerate() {
                         for case in cases {
-                            if case.events.contains(ev) || case.events.contains(&"null".to_string()) {
+                            if case.events.contains(ev) {
                                 found = Some((qi, case.clone()));
                                 break;
                             }
