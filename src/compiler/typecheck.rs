@@ -1084,17 +1084,26 @@ impl<'a> TypeChecker<'a> {
                     self.err("cannot raise the null event", *span);
                 }
                 // Check payload matches event declaration
+                let mut arg_types = Vec::new();
+                for arg in args {
+                    arg_types.push(self.infer_expr_type(arg, ctx, locals));
+                }
                 if let Expr::Iden(name, _) = event {
-                    if let Some(ev_info) = self.events.get(name) {
-                        if ev_info.payload.is_some() && args.is_empty() {
+                    let ev_payload = self.events.get(name).and_then(|e| e.payload.clone());
+                    if let Some(expected) = ev_payload {
+                        if arg_types.is_empty() {
                             self.err(format!(
                                 "event '{name}' requires a payload but raise provides none"
                             ), *span);
+                        } else {
+                            let actual = if arg_types.len() == 1 { arg_types[0].clone() } else { PResolvedType::Tuple(arg_types) };
+                            if actual != PResolvedType::Any && !expected.is_assignable_from(&actual) {
+                                self.err(format!(
+                                    "raise event '{name}' payload type mismatch: expected {expected}, got {actual}"
+                                ), *span);
+                            }
                         }
                     }
-                }
-                for arg in args {
-                    self.infer_expr_type(arg, ctx, locals);
                 }
             }
             Stmt::Send { target, event, args, span } => {
@@ -1108,20 +1117,32 @@ impl<'a> TypeChecker<'a> {
                 self.infer_expr_type(target, ctx, locals);
                 self.infer_expr_type(event, ctx, locals);
                 // Check send payload matches event declaration
+                let mut send_arg_types = Vec::new();
+                for arg in args {
+                    send_arg_types.push(self.infer_expr_type(arg, ctx, locals));
+                }
                 if let Expr::Iden(name, _) = event {
-                    let ev_has_payload = self.events.get(name).and_then(|e| e.payload.as_ref()).is_some();
+                    let ev_payload = self.events.get(name).and_then(|e| e.payload.clone());
                     let ev_exists = self.events.contains_key(name);
                     if ev_exists {
-                        if ev_has_payload && args.is_empty() {
-                            self.err(format!("event '{name}' requires a payload but send provides none"), *span);
-                        }
-                        if !ev_has_payload && !args.is_empty() {
-                            self.err(format!("event '{name}' has no payload but send provides one"), *span);
+                        match (&ev_payload, send_arg_types.len()) {
+                            (Some(expected), 0) => {
+                                self.err(format!("event '{name}' requires a payload but send provides none"), *span);
+                            }
+                            (None, n) if n > 0 => {
+                                self.err(format!("event '{name}' has no payload but send provides one"), *span);
+                            }
+                            (Some(expected), _) => {
+                                let actual = if send_arg_types.len() == 1 { send_arg_types[0].clone() } else { PResolvedType::Tuple(send_arg_types) };
+                                if actual != PResolvedType::Any && !expected.is_assignable_from(&actual) {
+                                    self.err(format!(
+                                        "send event '{name}' payload type mismatch: expected {expected}, got {actual}"
+                                    ), *span);
+                                }
+                            }
+                            _ => {}
                         }
                     }
-                }
-                for arg in args {
-                    self.infer_expr_type(arg, ctx, locals);
                 }
             }
             Stmt::Announce { event, args, span } => {
