@@ -55,24 +55,12 @@ party verify <path> --replay f.prun Replay a saved schedule
 
 ## Features
 
-- **Lexer & parser** — Full P language grammar, recursive descent with Pratt expression parsing
-- **Type checker** — Subtyping, payload validation, purity analysis, 137/137 static error tests
-- **Model checker** — DFS + random scheduling, nondeterministic exploration
-- **Spec monitors** — Safety assertions, liveness via temperature-based hot/cold states
-- **Formatter** — Consistent 2-space style, `--check` mode for CI
-- **Counterexample traces** — Structured event log with step numbers
-- **Schedule replay** — Save `.prun` files, reproduce bugs deterministically
-
-## Test results
-
-```
-Correct programs    147/147   100%
-Static errors       137/137   100%
-Liveness            21/21     100%
-Dynamic errors      104/107    97%
-─────────────────────────────────
-Total               409/412   99.3%
-```
+- **Catch bugs before production** — Finds race conditions, deadlocks, and protocol violations that tests miss
+- **See exactly what went wrong** — Counterexample traces show the step-by-step interleaving that triggered the bug
+- **Reproduce any bug on demand** — Schedules are saved to `.prun` files for deterministic replay, every time
+- **Fast feedback loop** — Lint catches type errors and spec violations instantly, before model checking
+- **Clean code, enforced** — Auto-formatter with `--check` mode for CI, consistent style across your team
+- **Safety and liveness** — Verify both "bad things never happen" and "good things eventually happen"
 
 ## Development
 
