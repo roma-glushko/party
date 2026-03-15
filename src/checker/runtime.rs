@@ -202,7 +202,21 @@ impl Runtime {
 
             // Find machines with events to process
             let enabled: Vec<usize> = self.instances.iter().enumerate()
-                .filter(|(_, inst)| !inst.halted && !inst.event_queue.is_empty() && !inst.is_spec)
+                .filter(|(_, inst)| {
+                    if inst.halted || inst.is_spec { return false; }
+                    if !inst.event_queue.is_empty() { return true; }
+                    // Also enable machines with null handler in current state
+                    if let Some(machine) = self.machines.get(&inst.machine_name) {
+                        if let Some(state) = machine.body.states.iter().find(|s| s.name == inst.current_state) {
+                            return state.items.iter().any(|item| match item {
+                                StateBodyItem::OnEventDoAction(on) => on.events.contains(&"null".to_string()),
+                                StateBodyItem::OnEventGotoState(on) => on.events.contains(&"null".to_string()),
+                                _ => false,
+                            });
+                        }
+                    }
+                    false
+                })
                 .map(|(i, _)| i)
                 .collect();
 
@@ -341,10 +355,33 @@ impl Runtime {
             return Ok(());
         }
 
-        // Dequeue an event
+        // Dequeue an event, or synthesize null event if queue is empty but null handler exists
         let event = self.instances[id].event_queue.pop_front();
-        let Some((event_name, payload)) = event else {
-            return Ok(());
+        let (event_name, payload) = match event {
+            Some(ep) => ep,
+            None => {
+                // Check for null handler
+                let machine_name = self.instances[id].machine_name.clone();
+                let current_state = self.instances[id].current_state.clone();
+                if let Some(machine) = self.machines.get(&machine_name) {
+                    if let Some(state) = machine.body.states.iter().find(|s| s.name == current_state) {
+                        let has_null = state.items.iter().any(|item| match item {
+                            StateBodyItem::OnEventDoAction(on) => on.events.contains(&"null".to_string()),
+                            StateBodyItem::OnEventGotoState(on) => on.events.contains(&"null".to_string()),
+                            _ => false,
+                        });
+                        if has_null {
+                            ("null".to_string(), None)
+                        } else {
+                            return Ok(());
+                        }
+                    } else {
+                        return Ok(());
+                    }
+                } else {
+                    return Ok(());
+                }
+            }
         };
 
         // Handle init event — run start state entry handler
