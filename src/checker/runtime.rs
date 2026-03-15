@@ -80,6 +80,13 @@ pub struct Runtime {
     /// Currently active local variable names that shadow machine fields.
     /// Used to prevent syncing local values back to machine fields.
     active_locals: HashSet<String>,
+    /// Counter for consecutive atomic transitions (raise/goto chains).
+    /// Reset when returning to the scheduling loop.
+    atomic_steps: usize,
+    /// Last state visited in atomic chain, for self-loop detection.
+    last_atomic_state: Option<(usize, String)>,
+    /// How many times the same (machine, state) pair repeated in a row.
+    same_state_count: usize,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -120,6 +127,9 @@ impl Runtime {
             named_modules: HashMap::new(),
             event_log: Vec::new(),
             active_locals: HashSet::new(),
+            atomic_steps: 0,
+            last_atomic_state: None,
+            same_state_count: 0,
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -310,7 +320,22 @@ impl Runtime {
                 }
             };
 
+            self.atomic_steps = 0;
+            self.same_state_count = 0;
+            self.last_atomic_state = None;
+            let steps_before = self.steps;
             self.step_machine(idx)?;
+            let steps_consumed = self.steps - steps_before;
+            // If a single step_machine call consumed most of the step budget,
+            // it's likely an infinite atomic loop
+            if steps_consumed > self.max_steps * 2 / 3 {
+                return Err(CheckError {
+                    message: format!(
+                        "liveness violation: infinite atomic loop (machine consumed {} steps in single scheduling step)",
+                        steps_consumed
+                    ),
+                });
+            }
             self.steps += 1;
 
             // Check liveness temperature after each scheduling step
@@ -661,7 +686,28 @@ impl Runtime {
 
     fn transition_to_state(&mut self, id: usize, target: &str, payload: Option<PValue>) -> Result<(), CheckError> {
         self.steps += 1;
-        if self.steps >= self.max_steps { return Ok(()); }
+
+        // Detect self-loop: same machine transitioning to the same state repeatedly
+        let key = (id, target.to_string());
+        if self.last_atomic_state.as_ref() == Some(&key) {
+            self.same_state_count += 1;
+        } else {
+            self.last_atomic_state = Some(key);
+            self.same_state_count = 1;
+        }
+
+        if self.steps >= self.max_steps {
+            // At step limit: if we burned most steps in a self-loop, it's infinite
+            if self.same_state_count >= self.max_steps * 3 / 4 {
+                return Err(CheckError {
+                    message: format!(
+                        "liveness violation: infinite loop in machine '{}' (state '{target}')",
+                        self.instances[id].machine_name
+                    ),
+                });
+            }
+            return Ok(());
+        }
         debug!("transition {}[{}] -> {}", self.instances[id].machine_name, self.instances[id].current_state, target);
         self.run_exit_handler(id)?;
         self.instances[id].current_state = target.to_string();
@@ -705,8 +751,20 @@ impl Runtime {
 
     fn handle_outcome(&mut self, id: usize, outcome: HandlerOutcome) -> Result<(), CheckError> {
         match outcome {
-            HandlerOutcome::Normal | HandlerOutcome::Return(_) | HandlerOutcome::Break | HandlerOutcome::Continue => Ok(()),
+            HandlerOutcome::Normal | HandlerOutcome::Return(_) | HandlerOutcome::Break | HandlerOutcome::Continue => {
+                self.atomic_steps = 0;
+                Ok(())
+            }
             HandlerOutcome::Raised(event, payload) => {
+                self.atomic_steps += 1;
+                if self.atomic_steps > 5000 {
+                    return Err(CheckError {
+                        message: format!(
+                            "liveness violation: infinite atomic loop in machine '{}' state '{}'",
+                            self.instances[id].machine_name, self.instances[id].current_state
+                        ),
+                    });
+                }
                 debug!("raise '{}' in machine {}[{}] state={}",
                     event, self.instances[id].machine_name, id, self.instances[id].current_state);
                 if event == "halt" {
@@ -738,6 +796,15 @@ impl Runtime {
                 self.step_machine(id)
             }
             HandlerOutcome::GotoState(target, payload) => {
+                self.atomic_steps += 1;
+                if self.atomic_steps > 5000 {
+                    return Err(CheckError {
+                        message: format!(
+                            "liveness violation: infinite atomic loop in machine '{}' state '{}'",
+                            self.instances[id].machine_name, self.instances[id].current_state
+                        ),
+                    });
+                }
                 self.transition_to_state(id, &target, payload)
             }
             HandlerOutcome::Halted => {
