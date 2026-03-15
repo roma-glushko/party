@@ -1,6 +1,6 @@
 //! P program runtime: executes compiled P programs with model checking.
 
-use std::collections::{BTreeMap, HashMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 use log::{debug, trace};
 use rand::RngExt;
@@ -77,6 +77,9 @@ pub struct Runtime {
     named_modules: HashMap<String, ModExpr>,
     /// Log of all announced events (for replaying to late-created specs).
     event_log: Vec<(String, Option<PValue>)>,
+    /// Currently active local variable names that shadow machine fields.
+    /// Used to prevent syncing local values back to machine fields.
+    active_locals: HashSet<String>,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -116,6 +119,7 @@ impl Runtime {
             interface_to_machine: HashMap::new(),
             named_modules: HashMap::new(),
             event_log: Vec::new(),
+            active_locals: HashSet::new(),
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -759,6 +763,16 @@ impl Runtime {
         }
     }
 
+    fn sync_env_to_fields_excluding(&mut self, id: usize, env: &HashMap<String, PValue>, exclude: &HashSet<String>) {
+        let inst = &mut self.instances[id];
+        for (name, val) in env {
+            if inst.fields.contains_key(name) && !exclude.contains(name) {
+                trace!("sync field {}[{}] = {}", inst.machine_name, name, val);
+                inst.fields.insert(name.clone(), val.clone());
+            }
+        }
+    }
+
     // ---- Statement/expression execution ----
 
     fn exec_body(&mut self, id: usize, machine: &MachineDecl, body: &FunctionBody, env: &mut HashMap<String, PValue>) -> Result<HandlerOutcome, CheckError> {
@@ -803,7 +817,7 @@ impl Runtime {
                         let mv = self.eval_expr(id, machine, m, env)?;
                         format!("Assertion failed: {mv}")
                     } else {
-                        "Assertion failed".to_string()
+                        format!("Assertion failed: {:?}", expr)
                     };
                     return Err(CheckError { message: msg });
                 }
@@ -1659,7 +1673,7 @@ impl Runtime {
     }
 
     /// Read the current value at an lvalue position.
-    fn read_lvalue(&self, id: usize, lv: &LValue, env: &HashMap<String, PValue>) -> PValue {
+    fn read_lvalue(&mut self, id: usize, lv: &LValue, env: &HashMap<String, PValue>) -> PValue {
         match lv {
             LValue::Var(name, _) => {
                 env.get(name)
@@ -1685,10 +1699,26 @@ impl Runtime {
                     _ => PValue::Null,
                 }
             }
-            LValue::Index(base, _index_expr, _) => {
-                // For reading, we'd need to evaluate the index expr, but we don't have
-                // &mut self here. Return the whole collection instead.
-                self.read_lvalue(id, base, env)
+            LValue::Index(base, index_expr, _) => {
+                let base_val = self.read_lvalue(id, base, env);
+                let machine = self.machines.get(&self.instances[id].machine_name).unwrap().clone();
+                // Need a mutable env clone for eval_expr
+                let mut env_clone = env.clone();
+                let idx = self.eval_expr(id, &machine, index_expr, &mut env_clone).unwrap_or(PValue::Int(0));
+                match base_val {
+                    PValue::Seq(seq) => {
+                        let i = idx.as_int().unwrap_or(0) as usize;
+                        seq.get(i).cloned().unwrap_or(PValue::Null)
+                    }
+                    PValue::Map(map) => {
+                        map.get(&idx).cloned().unwrap_or(PValue::Null)
+                    }
+                    PValue::Set(set) => {
+                        let i = idx.as_int().unwrap_or(0) as usize;
+                        set.get(i).cloned().unwrap_or(PValue::Null)
+                    }
+                    other => other,
+                }
             }
         }
     }
