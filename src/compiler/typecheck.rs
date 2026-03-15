@@ -138,6 +138,32 @@ impl<'a> TypeChecker<'a> {
         // Phase 2: Resolve type references in declarations
         self.resolve_typedefs();
 
+        // Phase 2b: Re-resolve event payload types (events declared before typedefs
+        // may have Foreign("TUP") instead of the actual typedef)
+        let event_names: Vec<String> = self.events.keys().cloned().collect();
+        for name in event_names {
+            if let Some(info) = self.events.get(&name).cloned() {
+                if let Some(ref payload) = info.payload {
+                    if matches!(payload, PResolvedType::Foreign(_)) {
+                        // Re-resolve using updated typedefs
+                        // Find the original AST type to re-resolve
+                        // Simple approach: if it's Foreign("X") and we now have typedef "X", update
+                        if let PResolvedType::Foreign(tname) = payload {
+                            if let Some(resolved) = self.typedefs.get(tname) {
+                                self.events.insert(name, EventInfo {
+                                    payload: Some(PResolvedType::TypeDef(tname.clone(), Box::new(resolved.clone()))),
+                                });
+                            } else if self.enums.contains_key(tname) {
+                                self.events.insert(name, EventInfo {
+                                    payload: Some(PResolvedType::Enum(tname.clone())),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Phase 3: Validate machines (start states, handlers, spec restrictions)
         let machine_names: Vec<String> = self.machines.keys().cloned().collect();
         for name in &machine_names {
