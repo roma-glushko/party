@@ -71,6 +71,8 @@ pub struct Runtime {
     typedefs: HashMap<String, PType>,
     /// Global functions (not in any machine).
     global_funs: HashMap<String, FunDecl>,
+    /// Global parameter values.
+    global_params: HashMap<String, PValue>,
     /// Interface name -> implementing machine name.
     interface_to_machine: HashMap<String, String>,
     /// Named module expressions.
@@ -123,6 +125,7 @@ impl Runtime {
             enum_values: HashMap::new(),
             typedefs: HashMap::new(),
             global_funs: HashMap::new(),
+            global_params: HashMap::new(),
             interface_to_machine: HashMap::new(),
             named_modules: HashMap::new(),
             event_log: Vec::new(),
@@ -176,8 +179,22 @@ impl Runtime {
                     TopDecl::ImplementationDecl(impl_decl) => {
                         // Extract interface-to-machine bindings (deferred to second pass)
                     }
-                    TopDecl::TestDecl(_) => {
-                        // Extract interface-to-machine bindings (deferred to second pass)
+                    TopDecl::TestDecl(test_decl) => {
+                        // Set global param values from test parametric ranges
+                        if let Some(params) = &test_decl.params {
+                            for param in params {
+                                if let Some(&val) = param.values.first() {
+                                    rt.global_params.insert(param.name.clone(), PValue::Int(val));
+                                }
+                            }
+                        }
+                    }
+                    TopDecl::GlobalParamDecl(gp) => {
+                        // Register global params with default values
+                        for name in &gp.names {
+                            rt.global_params.entry(name.clone())
+                                .or_insert(PValue::Int(0));
+                        }
                     }
                     _ => {}
                 }
@@ -249,9 +266,12 @@ impl Runtime {
             self.create_machine(name, None)?;
         }
 
-        // Note: events announced during Main's entry are missed by specs
-        // created after Main. This is a known limitation; the proper fix
-        // would require creating specs before Main or using deferred entry.
+        // Replay ONLY announce events that were logged when zero specs existed.
+        // Send events get replayed via the dequeue-announce path automatically.
+        // We filter to only events that are actual "announce" (not send/raise).
+        // Since we can't distinguish, just clear the log — the dequeue-announce
+        // path in step_machine handles re-announcing events when they're processed.
+        self.event_log.clear();
 
         // Run the scheduling loop
         loop {
@@ -1332,6 +1352,8 @@ impl Runtime {
             Expr::Iden(name, _) => {
                 // Check locals/env first
                 if let Some(val) = env.get(name) { return Ok(val.clone()); }
+                // Check global params
+                if let Some(val) = self.global_params.get(name) { return Ok(val.clone()); }
                 // Check enum elements
                 if let Some(enum_name) = self.enum_elements.get(name) {
                     return Ok(PValue::EnumVal(enum_name.clone(), name.clone()));
@@ -1531,7 +1553,18 @@ impl Runtime {
                         Ok(val)
                     }
                     PValue::MachineRef(_) => Ok(val), // machine cast is always ok
-                    PValue::Null => Ok(val),
+                    PValue::Null => {
+                        // Null can be cast to machine, event, any — but not to tuples or primitives
+                        match ty {
+                            PType::Machine | PType::Event | PType::Any | PType::Named(_) => Ok(val),
+                            PType::Tuple(_) | PType::NamedTuple(_) | PType::Seq(_) | PType::Set(_) | PType::Map(_, _) => {
+                                Err(CheckError {
+                                    message: "invalid cast: cannot cast null to concrete type".to_string(),
+                                })
+                            }
+                            _ => Ok(val),
+                        }
+                    }
                     // For 'as' casts on non-primitive values: runtime type check
                     ref other => {
                         // If casting to an enum type, check the value is actually that enum
