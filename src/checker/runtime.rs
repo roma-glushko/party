@@ -923,26 +923,55 @@ impl Runtime {
     // ---- Statement/expression execution ----
 
     fn exec_body(&mut self, id: usize, machine: &MachineDecl, body: &FunctionBody, env: &mut HashMap<String, PValue>) -> Result<HandlerOutcome, CheckError> {
-        // Register local variables
+        // Track local variable names that shadow machine fields.
+        // Save the field values so we can restore them after sync.
+        let mut shadowed_fields: HashMap<String, PValue> = HashMap::new();
+
         for var in &body.var_decls {
             let default = self.default_value_for_type(&var.ty);
             for name in &var.names {
+                // If this local shadows a machine field or existing env var, save the value
+                if let Some(existing) = env.get(name) {
+                    shadowed_fields.insert(name.clone(), existing.clone());
+                } else if self.instances[id].fields.contains_key(name) {
+                    shadowed_fields.insert(name.clone(), self.instances[id].fields[name].clone());
+                }
                 env.insert(name.clone(), default.clone());
             }
         }
 
-        for stmt in &body.stmts {
-            let outcome = self.exec_stmt(id, machine, stmt, env)?;
-            match outcome {
-                HandlerOutcome::Normal => {}
-                other => {
-                    self.sync_env_to_fields(id, env);
-                    return Ok(other);
+        let result = (|| -> Result<HandlerOutcome, CheckError> {
+            for stmt in &body.stmts {
+                let outcome = self.exec_stmt(id, machine, stmt, env)?;
+                match outcome {
+                    HandlerOutcome::Normal => {}
+                    other => {
+                        self.sync_env_to_fields(id, env);
+                        return Ok(other);
+                    }
+                }
+            }
+            self.sync_env_to_fields(id, env);
+            Ok(HandlerOutcome::Normal)
+        })();
+
+        // Restore state: remove locally declared variables from env and fields
+        for var in &body.var_decls {
+            for name in &var.names {
+                if let Some(saved_val) = shadowed_fields.get(name) {
+                    // Restore the previous value (variable or field that was shadowed)
+                    env.insert(name.clone(), saved_val.clone());
+                    self.instances[id].fields.insert(name.clone(), saved_val.clone());
+                } else {
+                    // Variable didn't exist before — remove it from env
+                    env.remove(name);
+                    // Don't remove from fields (it might be a field set during the handler
+                    // that wasn't shadowed, like `z` or `ts.a`)
                 }
             }
         }
-        self.sync_env_to_fields(id, env);
-        Ok(HandlerOutcome::Normal)
+
+        result
     }
 
     fn exec_stmt(&mut self, id: usize, machine: &MachineDecl, stmt: &Stmt, env: &mut HashMap<String, PValue>) -> Result<HandlerOutcome, CheckError> {
