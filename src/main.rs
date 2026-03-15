@@ -295,7 +295,7 @@ fn run_format(path: &PathBuf, check: bool) {
             }
         };
 
-        let formatted = party::compiler::formatter::format_program(&program);
+        let formatted = party::compiler::formatter::format_program_with_source(&program, &source);
 
         if formatted != source {
             if check {

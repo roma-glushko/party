@@ -4,7 +4,7 @@ fn format_source(source: &str) -> String {
     let tokens = party::compiler::lexer::lex(source).expect("lex failed");
     let mut parser = party::compiler::parser::Parser::new(tokens, source.to_string());
     let program = parser.parse_program().expect("parse failed");
-    party::compiler::formatter::format_program(&program)
+    party::compiler::formatter::format_program_with_source(&program, source)
 }
 
 // ---- Style convention tests ----
@@ -473,14 +473,14 @@ fn format_all_parseable_testdata() {
                 Err(_) => continue,
             };
             count += 1;
-            let formatted = party::compiler::formatter::format_program(&program);
+            let formatted = party::compiler::formatter::format_program_with_source(&program, &source);
 
             // Critical: formatted output must be re-parseable
             let tokens2 = match party::compiler::lexer::lex(&formatted) {
                 Ok(t) => t,
                 Err(e) => { critical.push(format!("{}: re-lex: {e}", entry.display())); continue; }
             };
-            let mut parser2 = party::compiler::parser::Parser::new(tokens2, formatted);
+            let mut parser2 = party::compiler::parser::Parser::new(tokens2, formatted.clone());
             if let Err(e) = parser2.parse_program() {
                 critical.push(format!("{}: re-parse: {e}", entry.display()));
             }

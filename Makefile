@@ -1,4 +1,4 @@
-.PHONY: build release lint test test-e2e clean install verify-raft help
+.PHONY: build release lint test test-e2e clean install verify-raft verify-elevator help
 
 all: lint test build ## Run lint, tests, and build
 
@@ -17,6 +17,8 @@ lint: ## Check formatting, run clippy, lint P examples
 	cargo clippy --all-targets -- -D warnings
 	cargo run -q -- format --check examples/raft
 	cargo run -q -- lint examples/raft
+	cargo run -q -- format --check examples/elevator
+	cargo run -q -- lint examples/elevator
 
 test: ## Run all test suites
 	cargo test
@@ -32,3 +34,6 @@ install: release ## Build release and install to ~/.cargo/bin
 
 verify-raft: ## Run model checker on the Raft example
 	cargo run -q -- verify examples/raft -t TestRaft
+
+verify-elevator: ## Run model checker on the Elevator example
+	cargo run -q -- verify examples/elevator -t TestElevator

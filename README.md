@@ -2,7 +2,8 @@
 
 **P** l**A**nguage in **R**us**T** — a formal verification toolchain for distributed systems.
 
-Party is a from-scratch Rust implementation of the [P language](https://p-org.github.io/P/) compiler and model checker. P lets you model distributed systems as communicating state machines and automatically verify safety and liveness properties.
+Party is a from-scratch Rust implementation of the [P language](https://p-org.github.io/P/) compiler and model checker. 
+P lets you model distributed systems as communicating state machines and automatically verify safety and liveness properties.
 
 ## Quick start
 
@@ -17,6 +18,49 @@ party format myproject/
 
 # Verify correctness
 party verify myproject/ -t TestSafety
+```
+
+Hello world example:
+
+```p
+event Ping;
+event Pong;
+
+machine Pinger {
+  var ponger: machine;
+
+  start state Init {
+    entry (p: machine) {
+      ponger = p;
+      send ponger, Ping;
+    }
+
+    on Pong do {
+      print "Pinger received Pong!";
+    }
+  }
+}
+
+machine Ponger {
+  start state Wait {
+    on Ping do {
+      print "Ponger received Ping!";
+      send sender, Pong;
+    }
+  }
+}
+
+machine Main {
+  start state Start {
+    entry {
+      var ponger: machine;
+      var pinger: machine;
+
+      ponger = new Ponger();
+      pinger = new Pinger(ponger);
+    }
+  }
+}
 ```
 
 ## What it does

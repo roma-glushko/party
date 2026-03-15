@@ -129,6 +129,14 @@ pub struct Runtime {
     scheduling_mode: SchedulingMode,
     /// DFS scheduler (only used in DFS mode, shared across iterations).
     dfs_scheduler: Option<DfsScheduler>,
+    /// When true, sends yield to the target machine, allowing it to process
+    /// the event before the sender continues. This simulates the C# P runtime's
+    /// scheduling points during send statements.
+    send_yields: bool,
+    /// Guard against recursive send_yields (prevent infinite mutual stepping).
+    in_send_yield: bool,
+    /// Tracks whether we're inside an exit handler (for send_yields scoping).
+    in_exit_handler: bool,
 }
 
 impl Runtime {
@@ -167,6 +175,9 @@ impl Runtime {
             scheduling_mode: SchedulingMode::Random { bias: None },
             dfs_scheduler: None,
             main_machine_name: None,
+            send_yields: false,
+            in_send_yield: false,
+            in_exit_handler: false,
         };
 
         // Register all declarations
@@ -248,6 +259,13 @@ impl Runtime {
     /// Set the bias for unfair nondeterministic choices ($).
     pub fn set_nondet_bias(&mut self, bias: Option<bool>) {
         self.nondet_bias = bias;
+    }
+
+    /// Enable send-yields mode. When true, after each send statement,
+    /// the target machine is stepped to process the event immediately.
+    /// This simulates the C# P runtime's scheduling points during sends.
+    pub fn set_send_yields(&mut self, yields: bool) {
+        self.send_yields = yields;
     }
 
     /// Enable DFS scheduling mode with a shared scheduler.
@@ -842,12 +860,17 @@ impl Runtime {
 
         for item in &state.items {
             if let StateBodyItem::Exit(ee) = item {
-                if let Some(handler) = &ee.anon_handler {
+                self.in_exit_handler = true;
+                let result = if let Some(handler) = &ee.anon_handler {
                     let mut env = self.make_env(id);
-                    self.exec_body(id, &machine, &handler.body, &mut env)?;
+                    self.exec_body(id, &machine, &handler.body, &mut env)
                 } else if let Some(fn_name) = &ee.fun_name {
-                    self.call_function(id, &machine, fn_name, &[])?;
-                }
+                    self.call_function(id, &machine, fn_name, &[])
+                } else {
+                    Ok(HandlerOutcome::Normal)
+                };
+                self.in_exit_handler = false;
+                result?;
                 return Ok(());
             }
         }
@@ -1324,9 +1347,6 @@ impl Runtime {
                     None
                 };
 
-                // Announce to monitors
-                self.announce_event(&event_name, &payload)?;
-
                 // Announce to spec monitors (monitors see all sent events)
                 self.announce_event(&event_name, &payload)?;
 
@@ -1339,6 +1359,26 @@ impl Runtime {
                         format!("{} -> {}#{}", event_name, self.instances[target_id].machine_name, target_id),
                     );
                     self.instances[target_id].event_queue.push_back((event_name, payload));
+
+                    // Simulate C# P runtime's scheduling points during sends.
+                    // Only yield during exit handlers (where sends interleave with
+                    // other machines), and only when the target had exactly 1 event
+                    // (the one just sent) — meaning the target was idle.
+                    if self.send_yields && self.in_exit_handler && !self.in_send_yield
+                        && target_id != id && !self.instances[target_id].is_spec
+                        && self.instances[target_id].event_queue.len() == 1
+                    {
+                        self.in_send_yield = true;
+                        for _ in 0..100 {
+                            if self.instances[target_id].halted { break; }
+                            let had_events = !self.instances[target_id].event_queue.is_empty();
+                            let had_null = self.has_null_handler(target_id);
+                            if !had_events && !had_null { break; }
+                            self.step_machine(target_id)?;
+                            if !had_events && had_null { break; }
+                        }
+                        self.in_send_yield = false;
+                    }
                 }
                 Ok(HandlerOutcome::Normal)
             }
@@ -2062,10 +2102,25 @@ impl Runtime {
         if let Some(fun) = fun {
             if let Some(body) = &fun.body {
                 let mut env = self.make_env(id);
+                // Save original field values for fields that will be shadowed by params.
+                // In P, function parameters are local — they must NOT modify machine fields.
+                let mut saved_param_fields: Vec<(String, Option<PValue>)> = Vec::new();
                 for (i, param) in fun.params.iter().enumerate() {
+                    let original = self.instances[id].fields.get(&param.name).cloned();
+                    if original.is_some() {
+                        saved_param_fields.push((param.name.clone(), original));
+                    }
                     env.insert(param.name.clone(), args.get(i).cloned().unwrap_or(PValue::Null));
                 }
-                self.exec_body(id, machine, body, &mut env)
+                let result = self.exec_body(id, machine, body, &mut env);
+                // Restore fields that were shadowed by function parameters.
+                // This ensures params don't leak into machine state.
+                for (name, val) in saved_param_fields {
+                    if let Some(v) = val {
+                        self.instances[id].fields.insert(name, v);
+                    }
+                }
+                result
             } else {
                 // Foreign function — no-op
                 Ok(HandlerOutcome::Return(None))

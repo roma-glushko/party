@@ -7,27 +7,108 @@
 //! - Blank line before event handlers (on/defer/ignore) in states
 //! - Short bodies on one line: `on E do { }`, `entry { x = 0; }`
 //! - Trailing comma in single-field named tuples: `(s = null,)`
+//! - Comments are preserved from the original source
 
 use super::ast::*;
+use super::token::Span;
 
 pub fn format_program(program: &Program) -> String {
-    let mut f = Formatter::new();
+    format_program_with_source(program, "")
+}
+
+pub fn format_program_with_source(program: &Program, source: &str) -> String {
+    let comments = extract_comments(source);
+    let mut f = Formatter::new(comments, source);
     f.fmt_program(program);
     f.output
 }
 
 const INDENT: &str = "  ";
 
+// ---- Comment extraction ----
+
+#[derive(Debug, Clone)]
+struct Comment {
+    text: String,
+    start: usize,   // byte offset
+    end: usize,     // byte offset
+    inline: bool,   // true if code precedes this comment on the same line
+}
+
+/// Extract all comments from source with their byte offsets.
+fn extract_comments(source: &str) -> Vec<Comment> {
+    let mut comments = Vec::new();
+    let bytes = source.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'/' {
+            // Line comment
+            let start = i;
+            while i < len && bytes[i] != b'\n' {
+                i += 1;
+            }
+            let text = source[start..i].trim_end().to_string();
+            let inline = is_inline_comment(source, start);
+            comments.push(Comment { text, start, end: i, inline });
+        } else if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            // Block comment
+            let start = i;
+            i += 2;
+            while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                i += 1;
+            }
+            if i + 1 < len { i += 2; } // skip */
+            let text = source[start..i].to_string();
+            let inline = is_inline_comment(source, start);
+            comments.push(Comment { text, start, end: i, inline });
+        } else if bytes[i] == b'"' {
+            // Skip string literals
+            i += 1;
+            while i < len && bytes[i] != b'"' {
+                if bytes[i] == b'\\' { i += 1; }
+                i += 1;
+            }
+            if i < len { i += 1; }
+        } else {
+            i += 1;
+        }
+    }
+
+    comments
+}
+
+/// Check if a comment at `offset` is inline (code precedes it on the same line).
+fn is_inline_comment(source: &str, offset: usize) -> bool {
+    // Walk backwards from offset to start of line
+    let bytes = source.as_bytes();
+    let mut j = offset;
+    while j > 0 && bytes[j - 1] != b'\n' {
+        j -= 1;
+    }
+    // Check if there's any non-whitespace between line start and comment
+    source[j..offset].chars().any(|c| !c.is_whitespace())
+}
+
+// ---- Formatter ----
+
 struct Formatter {
     output: String,
     indent: usize,
+    comments: Vec<Comment>,
+    comment_cursor: usize,  // index of next comment to consider
+    source: String,
 }
 
 impl Formatter {
-    fn new() -> Self {
+    fn new(comments: Vec<Comment>, source: &str) -> Self {
         Self {
             output: String::new(),
             indent: 0,
+            comments,
+            comment_cursor: 0,
+            source: source.to_string(),
         }
     }
 
@@ -54,13 +135,56 @@ impl Formatter {
         }
     }
 
+    /// Emit all standalone (non-inline) comments whose start offset is before `before_offset`.
+    fn emit_leading_comments(&mut self, before_offset: usize) {
+        while self.comment_cursor < self.comments.len() {
+            if self.comments[self.comment_cursor].start >= before_offset { break; }
+            if !self.comments[self.comment_cursor].inline {
+                let text = self.comments[self.comment_cursor].text.clone();
+                self.push(&text);
+                self.newline();
+            }
+            self.comment_cursor += 1;
+        }
+    }
+
+    /// Emit inline comments whose start offset is after `after_offset`.
+    /// Only advances the cursor past inline comments; leaves standalone comments
+    /// for `emit_leading_comments` to pick up later.
+    fn emit_inline_comment_after(&mut self, after_offset: usize) {
+        while self.comment_cursor < self.comments.len() {
+            let c = &self.comments[self.comment_cursor];
+            if c.start < after_offset { self.comment_cursor += 1; continue; }
+            if !c.inline { break; }
+            let text = c.text.clone();
+            while self.output.ends_with(' ') { self.output.pop(); }
+            self.push("  ");
+            self.push(&text);
+            self.comment_cursor += 1;
+        }
+    }
+
+    /// Emit any remaining comments at the end of the file.
+    fn emit_trailing_comments(&mut self) {
+        while self.comment_cursor < self.comments.len() {
+            let text = self.comments[self.comment_cursor].text.clone();
+            let inline = self.comments[self.comment_cursor].inline;
+            if inline {
+                self.push("  ");
+            }
+            self.push(&text);
+            self.comment_cursor += 1;
+            if self.comment_cursor < self.comments.len() {
+                self.newline();
+            }
+        }
+    }
+
     /// Check if a function body is "short" enough to render on one line.
-    /// Only truly trivial bodies: empty, or a single very short statement.
     fn is_short_body(body: &FunctionBody) -> bool {
         if !body.var_decls.is_empty() { return false; }
         if body.stmts.is_empty() { return true; }
         if body.stmts.len() > 1 { return false; }
-        // Single statement — only inline if it's very short (no args)
         match &body.stmts[0] {
             Stmt::NoStmt(_) | Stmt::Break(_) | Stmt::Continue(_) => true,
             Stmt::Return { value: None, .. } => true,
@@ -73,17 +197,33 @@ impl Formatter {
 
     fn fmt_program(&mut self, prog: &Program) {
         let mut prev_kind = DeclKind::None;
+        let mut prev_end: usize = 0;
         for decl in &prog.decls {
             let kind = decl_kind(decl);
+            let span = decl_span(decl);
+
             if prev_kind != DeclKind::None
                 && (kind != prev_kind
                     || matches!(kind, DeclKind::Machine | DeclKind::Spec))
             {
                 self.blank_line();
             }
+
+            // Emit leading comments before this declaration
+            self.emit_leading_comments(span.start);
+
             self.fmt_top_decl(decl);
+
+            // Emit inline comments after the declaration
+            self.emit_inline_comment_after(span.end);
             prev_kind = kind;
         }
+
+        // Emit any remaining comments at end of file
+        if !self.output.ends_with('\n') {
+            self.output.push('\n');
+        }
+        self.emit_trailing_comments();
         if !self.output.ends_with('\n') {
             self.output.push('\n');
         }
@@ -267,6 +407,7 @@ impl Formatter {
         // Variables
         for var in &m.body.vars {
             self.newline();
+            self.emit_leading_comments(var.span.start);
             self.fmt_var_decl(var);
         }
 
@@ -278,6 +419,7 @@ impl Formatter {
                 self.output.push('\n');
             }
             for _ in 0..self.indent { self.push(INDENT); }
+            self.emit_leading_comments(state.span.start);
             self.fmt_state(state);
             self.output.push('\n');
         }
@@ -288,6 +430,7 @@ impl Formatter {
                 self.blank_line();
             }
             for _ in 0..self.indent { self.push(INDENT); }
+            self.emit_leading_comments(fun.span.start);
             self.fmt_fun(fun);
         }
 
@@ -320,21 +463,22 @@ impl Formatter {
         self.push(" {");
         self.indent += 1;
 
-        // Separate entry/exit from event handlers with blank lines
         let mut had_entry_exit = false;
         for item in &s.items {
+            let item_span = state_item_span(item);
             let is_handler = matches!(item,
                 StateBodyItem::OnEventDoAction(_) | StateBodyItem::OnEventGotoState(_)
                 | StateBodyItem::Defer(_, _) | StateBodyItem::Ignore(_, _));
 
             if is_handler && had_entry_exit {
-                // Insert blank line, then indent (no extra newline call)
                 self.blank_line();
                 for _ in 0..self.indent { self.push(INDENT); }
+                self.emit_leading_comments(item_span.start);
                 self.fmt_state_item(item);
                 had_entry_exit = false;
             } else {
                 self.newline();
+                self.emit_leading_comments(item_span.start);
                 self.fmt_state_item(item);
             }
 
@@ -412,7 +556,6 @@ impl Formatter {
         }
     }
 
-    /// Format `(param : type) { body }` — inline if short, block if long.
     fn fmt_handler_params_and_body(&mut self, param: &Option<FunParam>, body: &FunctionBody) {
         if let Some(p) = param {
             self.push(" (");
@@ -425,7 +568,6 @@ impl Formatter {
         self.fmt_body_inline_or_block(body);
     }
 
-    /// Emit body as `{ stmt; }` on one line if short, or multi-line block otherwise.
     fn fmt_body_inline_or_block(&mut self, body: &FunctionBody) {
         if Self::is_short_body(body) {
             self.push("{ ");
@@ -474,6 +616,7 @@ impl Formatter {
         }
         for stmt in &body.stmts {
             self.newline();
+            self.emit_leading_comments(stmt_span(stmt).start);
             self.fmt_stmt(stmt);
         }
         self.indent -= 1;
@@ -490,6 +633,7 @@ impl Formatter {
                 self.indent += 1;
                 for s in stmts {
                     self.newline();
+                    self.emit_leading_comments(stmt_span(s).start);
                     self.fmt_stmt(s);
                 }
                 self.indent -= 1;
@@ -552,7 +696,9 @@ impl Formatter {
             Stmt::Remove { lvalue, key, .. } => {
                 self.fmt_lvalue(lvalue);
                 self.push(" -= (");
-                self.fmt_expr(key);
+                // Unwrap Paren to avoid double-wrapping: -= ((x)) → -= (x)
+                let inner = if let Expr::Paren(inner, _) = key { inner } else { key };
+                self.fmt_expr(inner);
                 self.push(");");
             }
             Stmt::While { cond, body, .. } => {
@@ -873,6 +1019,8 @@ impl Formatter {
     }
 }
 
+// ---- Helpers ----
+
 #[derive(PartialEq, Clone, Copy)]
 enum DeclKind { None, Type, Event, Machine, Spec, Fun, Module, Other }
 
@@ -886,5 +1034,56 @@ fn decl_kind(decl: &TopDecl) -> DeclKind {
         TopDecl::FunDecl(_) => DeclKind::Fun,
         TopDecl::ModuleDecl(_) | TopDecl::TestDecl(_) | TopDecl::ImplementationDecl(_) => DeclKind::Module,
         TopDecl::GlobalParamDecl(_) => DeclKind::Other,
+    }
+}
+
+fn decl_span(decl: &TopDecl) -> Span {
+    match decl {
+        TopDecl::TypeDef(d) => d.span,
+        TopDecl::EnumTypeDef(d) => d.span,
+        TopDecl::EventDecl(d) => d.span,
+        TopDecl::EventSetDecl(d) => d.span,
+        TopDecl::InterfaceDecl(d) => d.span,
+        TopDecl::MachineDecl(d) | TopDecl::SpecMachineDecl(d) => d.span,
+        TopDecl::FunDecl(d) => d.span,
+        TopDecl::ModuleDecl(d) => d.span,
+        TopDecl::TestDecl(d) => d.span,
+        TopDecl::ImplementationDecl(d) => d.span,
+        TopDecl::GlobalParamDecl(d) => d.span,
+    }
+}
+
+fn state_item_span(item: &StateBodyItem) -> Span {
+    match item {
+        StateBodyItem::Entry(ee) => ee.span,
+        StateBodyItem::Exit(ee) => ee.span,
+        StateBodyItem::Defer(_, s) | StateBodyItem::Ignore(_, s) => *s,
+        StateBodyItem::OnEventDoAction(on) => on.span,
+        StateBodyItem::OnEventGotoState(on) => on.span,
+    }
+}
+
+fn stmt_span(stmt: &Stmt) -> Span {
+    match stmt {
+        Stmt::Compound(_, s) => *s,
+        Stmt::Assert { span, .. } => *span,
+        Stmt::Assume { span, .. } => *span,
+        Stmt::Print { span, .. } => *span,
+        Stmt::Return { span, .. } => *span,
+        Stmt::Break(s) | Stmt::Continue(s) | Stmt::NoStmt(s) => *s,
+        Stmt::Assign { span, .. } => *span,
+        Stmt::Insert { span, .. } => *span,
+        Stmt::AddToSet { span, .. } => *span,
+        Stmt::Remove { span, .. } => *span,
+        Stmt::While { span, .. } => *span,
+        Stmt::Foreach { span, .. } => *span,
+        Stmt::If { span, .. } => *span,
+        Stmt::CtorStmt { span, .. } => *span,
+        Stmt::FunCall { span, .. } => *span,
+        Stmt::Raise { span, .. } => *span,
+        Stmt::Send { span, .. } => *span,
+        Stmt::Announce { span, .. } => *span,
+        Stmt::Goto { span, .. } => *span,
+        Stmt::Receive { span, .. } => *span,
     }
 }

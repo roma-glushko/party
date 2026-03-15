@@ -51,14 +51,21 @@ pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
         }
     }
 
-    // Phase 2: Random iterations with bias
-    for i in 0..30 {
+    // Phase 2: Random iterations with bias and send-yields
+    for i in 0..100 {
         let mut rt = runtime::Runtime::new(&program.programs);
         rt.set_nondet_bias(match i % 4 {
             1 => Some(true),
             2 => Some(false),
             _ => None,
         });
+        // In some iterations, enable send-yields: after each send, the target
+        // machine is stepped immediately. This simulates the C# P runtime's
+        // scheduling points during send statements, which can find bugs that
+        // require interleaving within handler bodies.
+        if i % 4 == 3 {
+            rt.set_send_yields(true);
+        }
         if let Err(e) = rt.run() {
             return CheckResult {
                 ok: false,
