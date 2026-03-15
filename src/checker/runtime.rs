@@ -278,10 +278,26 @@ impl Runtime {
         // continuously during execution. No additional check needed here.
         // The temperature threshold prevents false positives on programs
         // that cycle through hot states but always eventually reach cold states.
-        if false {
-            // Placeholder to keep the code structure for future enhancements
+        // End-of-run liveness check: if system is quiescent (all machines idle)
+        // and a spec monitor is in a hot state, that means the system terminated
+        // without satisfying the liveness property.
+        // Only check if the system genuinely terminated (not just hit step limit
+        // while cycling — that case is handled by the temperature check above).
+        let all_idle = self.instances.iter()
+            .filter(|inst| !inst.is_spec)
+            .all(|inst| inst.halted || inst.event_queue.is_empty());
+        let has_null_handlers = self.instances.iter().any(|inst| {
+            if inst.is_spec || inst.halted { return false; }
+            self.machines.get(&inst.machine_name).map_or(false, |m| {
+                m.body.states.iter().any(|s| s.name == inst.current_state && s.items.iter().any(|item| {
+                    matches!(item, StateBodyItem::OnEventDoAction(on) if on.events.contains(&"null".to_string()))
+                    || matches!(item, StateBodyItem::OnEventGotoState(on) if on.events.contains(&"null".to_string()))
+                }))
+            })
+        });
+        if all_idle && !has_null_handlers {
             for inst in &self.instances {
-                if inst.is_spec && inst.liveness_temperature > 0 {
+                if inst.is_spec && !inst.halted {
                     let machine = self.machines.get(&inst.machine_name).unwrap();
                     for state in &machine.body.states {
                         if state.name == inst.current_state && state.temperature == Some(Temperature::Hot) {
