@@ -263,20 +263,25 @@ impl<'a> TypeChecker<'a> {
                 }
             }
 
-            let handler_info = self.build_state_handler_info(state, &m.name);
-            info.state_handlers.insert(state.name.clone(), handler_info);
+            // State handler info built after functions (see below)
         }
 
-        // Register functions
+        // Register functions BEFORE building state handlers
+        // (entry handlers may reference named functions)
         for fun in &m.body.funs {
             let qualified = format!("{}::{}", m.name, fun.name);
             info.functions.push(fun.name.clone());
             self.register_function(fun, Some(&m.name));
-            // Also register with qualified name
             let finfo = self.functions.get(&fun.name).cloned();
             if let Some(fi) = finfo {
                 self.functions.insert(qualified, fi);
             }
+        }
+
+        // Now build state handler info (after functions are registered)
+        for state in &m.body.states {
+            let handler_info = self.build_state_handler_info(state, &m.name);
+            info.state_handlers.insert(state.name.clone(), handler_info);
         }
 
         // Determine entry payload from start state
@@ -308,6 +313,14 @@ impl<'a> TypeChecker<'a> {
                     if let Some(handler) = &ee.anon_handler {
                         if let Some(param) = &handler.param {
                             info.entry_param_type = Some(self.resolve_type(&param.ty));
+                        }
+                    }
+                    // Also check named entry function's parameter
+                    if let Some(fun_name) = &ee.fun_name {
+                        if let Some(fi) = self.functions.get(fun_name) {
+                            if let Some((_, ty)) = fi.params.first() {
+                                info.entry_param_type = Some(ty.clone());
+                            }
                         }
                     }
                 }
@@ -1008,22 +1021,25 @@ impl<'a> TypeChecker<'a> {
                     }
                 }
                 // Check payload matches machine entry parameter
-                if let Some(expected_payload) = self.interfaces.get(interface).and_then(|p| p.clone()) {
-                    let actual = match arg_types.len() {
-                        0 => {
-                            self.err(format!("machine '{interface}' requires a payload of type {expected_payload}"), *span);
-                            return;
-                        }
-                        1 => arg_types[0].clone(),
-                        _ => PResolvedType::Tuple(arg_types),
-                    };
-                    if actual != PResolvedType::Any && actual != PResolvedType::Void
-                        && !expected_payload.is_assignable_from(&actual)
-                    {
-                        self.err(format!(
-                            "machine '{interface}' expects payload {expected_payload}, got {actual}"
-                        ), *span);
+                let expected_payload = self.interfaces.get(interface).and_then(|p| p.clone());
+                match (&expected_payload, arg_types.len()) {
+                    (Some(expected), 0) => {
+                        self.err(format!("machine '{interface}' requires a payload of type {expected}"), *span);
                     }
+                    (None, n) if n > 0 => {
+                        self.err(format!("machine '{interface}' does not accept a payload"), *span);
+                    }
+                    (Some(expected), _) => {
+                        let actual = if arg_types.len() == 1 { arg_types[0].clone() } else { PResolvedType::Tuple(arg_types) };
+                        if actual != PResolvedType::Any && actual != PResolvedType::Void
+                            && !expected.is_assignable_from(&actual)
+                        {
+                            self.err(format!(
+                                "machine '{interface}' expects payload {expected}, got {actual}"
+                            ), *span);
+                        }
+                    }
+                    _ => {}
                 }
             }
             Stmt::FunCall { name, args, span } => {
