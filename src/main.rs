@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use std::time::Instant;
 
 #[derive(Parser)]
 #[command(name = "plang", about = "P language compiler and model checker")]
@@ -19,6 +20,22 @@ enum Command {
     Check {
         /// Path to directory or .pproj file containing .p files
         path: PathBuf,
+
+        /// Test case name to check (if multiple test cases exist)
+        #[arg(short = 't', long = "testcase", alias = "tc")]
+        testcase: Option<String>,
+
+        /// Number of scheduling iterations
+        #[arg(short = 'i', long = "iterations", default_value = "100")]
+        iterations: usize,
+
+        /// Maximum scheduling steps per iteration
+        #[arg(short = 's', long = "max-steps", default_value = "10000")]
+        max_steps: usize,
+
+        /// Scheduling strategy (random, dfs)
+        #[arg(long = "strategy", default_value = "random")]
+        strategy: String,
     },
 }
 
@@ -31,24 +48,60 @@ fn main() {
     match cli.command {
         Command::Compile { path } => {
             run_compile(&path);
+            println!("\n~~ [PLang]: Thanks for using P! ~~");
         }
-        Command::Check { path } => {
+        Command::Check { path, testcase, iterations, max_steps, strategy } => {
             let program = run_compile(&path);
+
+            // Discover test cases from the program
+            let test_cases = discover_test_cases(&program);
+
             println!("{SEPARATOR}");
-            println!("Model checking ...");
+            if test_cases.is_empty() {
+                println!(".. Checking {}", path.display());
+            } else if test_cases.len() == 1 || testcase.is_some() {
+                let tc_name = testcase.as_deref()
+                    .unwrap_or_else(|| &test_cases[0]);
+                println!(".. Checking test case: {tc_name}");
+            } else {
+                // Multiple test cases, no specific one selected
+                eprintln!(
+                    "Error: We found '{}' test cases. Please provide a more precise name of the \
+                     test case you wish to check using (--testcase | -tc).",
+                    test_cases.len()
+                );
+                println!("Possible options are:");
+                for tc in &test_cases {
+                    println!("  {tc}");
+                }
+                println!("\n~~ [PLang]: Thanks for using P! ~~");
+                std::process::exit(1);
+            }
+
+            let start = Instant::now();
+            println!("Starting model checking ...");
+            println!(
+                "  Strategy: {strategy}, Iterations: {iterations}, Max steps: {max_steps}"
+            );
+
             match plang::checker::check(&program) {
                 Ok(()) => {
-                    println!("Model checking passed.");
+                    let elapsed = start.elapsed();
+                    println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
+                    println!("... Found 0 bugs.");
                 }
                 Err(msg) => {
+                    let elapsed = start.elapsed();
+                    println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
+                    eprintln!("... Found a bug.");
                     eprintln!("Error: {msg}");
                     println!("{SEPARATOR}");
-                    println!("~~ [PLang]: Thanks for using P! ~~");
+                    println!("\n~~ [PLang]: Thanks for using P! ~~");
                     std::process::exit(1);
                 }
             }
             println!("{SEPARATOR}");
-            println!("~~ [PLang]: Thanks for using P! ~~");
+            println!("\n~~ [PLang]: Thanks for using P! ~~");
         }
     }
 }
@@ -71,9 +124,14 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
 
     println!("Parsing ...");
     println!("Type checking ...");
+    let start = Instant::now();
     match plang::compiler::compile(&dir) {
         Ok(program) => {
-            println!("Compilation successful.");
+            let elapsed = start.elapsed();
+            println!(
+                "Code generation ...  [done in {:.2}s]",
+                elapsed.as_secs_f64()
+            );
             println!("{SEPARATOR}");
             program
         }
@@ -82,7 +140,7 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
                 eprintln!("error: {e}");
             }
             println!("{SEPARATOR}");
-            println!("~~ [PLang]: Thanks for using P! ~~");
+            println!("\n~~ [PLang]: Thanks for using P! ~~");
             std::process::exit(1);
         }
     }
@@ -95,6 +153,9 @@ fn resolve_project_path(path: &PathBuf) -> PathBuf {
             for entry in entries.flatten() {
                 let p = entry.path();
                 if p.extension().is_some_and(|e| e == "pproj") {
+                    println!(
+                        ".. Searching for a P project file *.pproj locally in the current folder"
+                    );
                     println!(".. Found P project file: {}", p.display());
                     return path.clone();
                 }
@@ -107,4 +168,17 @@ fn resolve_project_path(path: &PathBuf) -> PathBuf {
     } else {
         path.clone()
     }
+}
+
+/// Extract test case names from the compiled program's test declarations.
+fn discover_test_cases(program: &plang::compiler::CompiledProgram) -> Vec<String> {
+    let mut names = Vec::new();
+    for prog in &program.programs {
+        for decl in &prog.decls {
+            if let plang::compiler::ast::TopDecl::TestDecl(t) = decl {
+                names.push(t.name.clone());
+            }
+        }
+    }
+    names
 }
