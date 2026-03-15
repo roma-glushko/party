@@ -987,6 +987,15 @@ impl<'a> TypeChecker<'a> {
                         PResolvedType::Any
                     }
                 };
+                // Iterator variable must be already declared
+                if !locals.contains_key(item) {
+                    // Check if it's a machine field
+                    let is_field = ctx.machine.as_ref().and_then(|m| self.machines.get(m))
+                        .map_or(false, |mi| mi.fields.iter().any(|(n, _)| n == item));
+                    if !is_field {
+                        self.err(format!("undeclared foreach iterator variable '{item}'"), *span);
+                    }
+                }
                 // Check if iterator variable type matches collection element type
                 if let Some(declared_ty) = locals.get(item) {
                     if *declared_ty != PResolvedType::Any && elem_ty != PResolvedType::Any
