@@ -77,8 +77,10 @@ pub struct Runtime {
     interface_to_machine: HashMap<String, String>,
     /// Named module expressions.
     named_modules: HashMap<String, ModExpr>,
-    /// Log of all announced events (for replaying to late-created specs).
+    /// Log of explicit announce events when no specs existed (for replay).
     event_log: Vec<(String, Option<PValue>)>,
+    /// Number of spec instances at time of event logging.
+    specs_exist: bool,
     /// Currently active local variable names that shadow machine fields.
     /// Used to prevent syncing local values back to machine fields.
     active_locals: HashSet<String>,
@@ -129,6 +131,7 @@ impl Runtime {
             interface_to_machine: HashMap::new(),
             named_modules: HashMap::new(),
             event_log: Vec::new(),
+            specs_exist: false,
             active_locals: HashSet::new(),
             atomic_steps: 0,
             last_atomic_state: None,
@@ -265,12 +268,8 @@ impl Runtime {
         for name in &spec_names {
             self.create_machine(name, None)?;
         }
+        self.specs_exist = true;
 
-        // Replay ONLY announce events that were logged when zero specs existed.
-        // Send events get replayed via the dequeue-announce path automatically.
-        // We filter to only events that are actual "announce" (not send/raise).
-        // Since we can't distinguish, just clear the log — the dequeue-announce
-        // path in step_machine handles re-announcing events when they're processed.
         self.event_log.clear();
 
         // Run the scheduling loop
@@ -1216,7 +1215,7 @@ impl Runtime {
                     if vals.len() == 1 { Some(vals.into_iter().next().unwrap()) }
                     else { Some(PValue::Tuple(vals)) }
                 } else { None };
-                self.announce_event(&event_name, &payload)?;
+                self.announce_event_explicit(&event_name, &payload)?;
                 Ok(HandlerOutcome::Normal)
             }
             Stmt::Goto { state, payload, .. } => {
@@ -1351,8 +1350,18 @@ impl Runtime {
     }
 
     fn announce_event(&mut self, event_name: &str, payload: &Option<PValue>) -> Result<(), CheckError> {
-        // Record event for replay to late-created specs
-        self.event_log.push((event_name.to_string(), payload.clone()));
+        self.announce_event_inner(event_name, payload, false)
+    }
+
+    fn announce_event_explicit(&mut self, event_name: &str, payload: &Option<PValue>) -> Result<(), CheckError> {
+        // Only log for replay if no specs exist yet
+        self.announce_event_inner(event_name, payload, !self.specs_exist)
+    }
+
+    fn announce_event_inner(&mut self, event_name: &str, payload: &Option<PValue>, log: bool) -> Result<(), CheckError> {
+        if log {
+            self.event_log.push((event_name.to_string(), payload.clone()));
+        }
 
         // Deliver event to all spec monitors that observe it
         let spec_ids: Vec<usize> = self.instances.iter().enumerate()
