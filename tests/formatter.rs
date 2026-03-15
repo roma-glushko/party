@@ -1,10 +1,10 @@
 use std::path::Path;
 
 fn format_source(source: &str) -> String {
-    let tokens = plang::compiler::lexer::lex(source).expect("lex failed");
-    let mut parser = plang::compiler::parser::Parser::new(tokens, source.to_string());
+    let tokens = party::compiler::lexer::lex(source).expect("lex failed");
+    let mut parser = party::compiler::parser::Parser::new(tokens, source.to_string());
     let program = parser.parse_program().expect("parse failed");
-    plang::compiler::formatter::format_program(&program)
+    party::compiler::formatter::format_program(&program)
 }
 
 // ---- Style convention tests ----
@@ -449,8 +449,8 @@ state Done {} }
 machine PONG { start state S {} }
 "#;
     let formatted = format_source(input);
-    let tokens = plang::compiler::lexer::lex(&formatted).expect("formatted should lex");
-    let mut parser = plang::compiler::parser::Parser::new(tokens, formatted.clone());
+    let tokens = party::compiler::lexer::lex(&formatted).expect("formatted should lex");
+    let mut parser = party::compiler::parser::Parser::new(tokens, formatted.clone());
     parser.parse_program().expect("formatted should parse");
 }
 
@@ -463,24 +463,24 @@ fn format_all_parseable_testdata() {
     for entry in walkdir(&testdata) {
         if entry.extension().is_some_and(|e| e == "p") {
             let source = std::fs::read_to_string(&entry).unwrap();
-            let tokens = match plang::compiler::lexer::lex(&source) {
+            let tokens = match party::compiler::lexer::lex(&source) {
                 Ok(t) => t,
                 Err(_) => continue,
             };
-            let mut parser = plang::compiler::parser::Parser::new(tokens, source.to_string());
+            let mut parser = party::compiler::parser::Parser::new(tokens, source.to_string());
             let program = match parser.parse_program() {
                 Ok(p) => p,
                 Err(_) => continue,
             };
             count += 1;
-            let formatted = plang::compiler::formatter::format_program(&program);
+            let formatted = party::compiler::formatter::format_program(&program);
 
             // Critical: formatted output must be re-parseable
-            let tokens2 = match plang::compiler::lexer::lex(&formatted) {
+            let tokens2 = match party::compiler::lexer::lex(&formatted) {
                 Ok(t) => t,
                 Err(e) => { critical.push(format!("{}: re-lex: {e}", entry.display())); continue; }
             };
-            let mut parser2 = plang::compiler::parser::Parser::new(tokens2, formatted);
+            let mut parser2 = party::compiler::parser::Parser::new(tokens2, formatted);
             if let Err(e) = parser2.parse_program() {
                 critical.push(format!("{}: re-parse: {e}", entry.display()));
             }

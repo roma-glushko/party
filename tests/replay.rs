@@ -1,34 +1,34 @@
 use std::path::Path;
 
-fn compile_programs(source: &str) -> plang::compiler::CompiledProgram {
-    let tokens = plang::compiler::lexer::lex(source).expect("lex");
-    let mut parser = plang::compiler::parser::Parser::new(tokens, source.to_string());
+fn compile_programs(source: &str) -> party::compiler::CompiledProgram {
+    let tokens = party::compiler::lexer::lex(source).expect("lex");
+    let mut parser = party::compiler::parser::Parser::new(tokens, source.to_string());
     let program = parser.parse_program().expect("parse");
-    plang::compiler::CompiledProgram { programs: vec![program] }
+    party::compiler::CompiledProgram { programs: vec![program] }
 }
 
 #[test]
 fn schedule_roundtrip_serialization() {
     // A schedule can be serialized to string and deserialized back
-    let schedule = plang::checker::trace::Schedule {
+    let schedule = party::checker::trace::Schedule {
         scheduling_choices: vec![0, 1, 0, 2],
         nondet_choices: vec![true, false, true],
     };
     let serialized = schedule.to_string();
-    let deserialized = plang::checker::trace::Schedule::parse(&serialized).unwrap();
+    let deserialized = party::checker::trace::Schedule::parse(&serialized).unwrap();
     assert_eq!(schedule.scheduling_choices, deserialized.scheduling_choices);
     assert_eq!(schedule.nondet_choices, deserialized.nondet_choices);
 }
 
 #[test]
 fn schedule_save_and_load_file() {
-    let schedule = plang::checker::trace::Schedule {
+    let schedule = party::checker::trace::Schedule {
         scheduling_choices: vec![1, 0, 2],
         nondet_choices: vec![false, true],
     };
     let path = std::env::temp_dir().join("test_schedule.txt");
     schedule.save(&path).unwrap();
-    let loaded = plang::checker::trace::Schedule::load(&path).unwrap();
+    let loaded = party::checker::trace::Schedule::load(&path).unwrap();
     assert_eq!(schedule.scheduling_choices, loaded.scheduling_choices);
     assert_eq!(schedule.nondet_choices, loaded.nondet_choices);
     std::fs::remove_file(&path).ok();
@@ -51,7 +51,7 @@ fn replay_reproduces_assertion_failure() {
     // Run until we find the bug, capturing the schedule
     let mut found_schedule = None;
     for _ in 0..100 {
-        let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+        let mut rt = party::checker::runtime::Runtime::new(&program.programs);
         let result = rt.run();
         if result.is_err() {
             found_schedule = Some(rt.get_schedule());
@@ -61,7 +61,7 @@ fn replay_reproduces_assertion_failure() {
     let schedule = found_schedule.expect("should find the bug in 100 tries");
 
     // Replay — must reproduce the same error
-    let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+    let mut rt = party::checker::runtime::Runtime::new(&program.programs);
     rt.set_schedule(schedule);
     let result = rt.run();
     assert!(result.is_err(), "replay should reproduce the bug");
@@ -85,13 +85,13 @@ fn replay_reproduces_same_trace() {
     "#);
 
     // Run once, get schedule and trace
-    let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+    let mut rt = party::checker::runtime::Runtime::new(&program.programs);
     let _ = rt.run();
     let schedule = rt.get_schedule();
     let trace1 = rt.get_trace();
 
     // Replay with same schedule
-    let mut rt2 = plang::checker::runtime::Runtime::new(&program.programs);
+    let mut rt2 = party::checker::runtime::Runtime::new(&program.programs);
     rt2.set_schedule(schedule);
     let _ = rt2.run();
     let trace2 = rt2.get_trace();
@@ -128,14 +128,14 @@ fn replay_deterministic_across_runs() {
     "#);
 
     // Get a schedule
-    let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+    let mut rt = party::checker::runtime::Runtime::new(&program.programs);
     let _ = rt.run();
     let schedule = rt.get_schedule();
 
     // Replay 5 times — all should produce identical traces
     let mut traces = Vec::new();
     for _ in 0..5 {
-        let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+        let mut rt = party::checker::runtime::Runtime::new(&program.programs);
         rt.set_schedule(schedule.clone());
         let _ = rt.run();
         traces.push(rt.get_trace());

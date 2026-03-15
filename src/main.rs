@@ -4,10 +4,10 @@ use std::time::Instant;
 
 #[derive(Parser)]
 #[command(
-    name = "plang",
+    name = "party",
     version,
-    about = "P language toolchain — formal verification for distributed systems",
-    long_about = "PLang is a reimplementation of the P language compiler and model checker.\n\
+    about = "Party — P lAnguage in RusT, formal verification for distributed systems",
+    long_about = "Party is a Rust implementation of the P language compiler and model checker.\n\
                   P is a state-machine based language for modeling and verifying\n\
                   complex distributed systems.\n\n\
                   Commands:\n  \
@@ -15,10 +15,10 @@ use std::time::Instant;
                     format  — Auto-format .p source files\n  \
                     verify  — Run model checking to find concurrency bugs\n\n\
                   Examples:\n  \
-                    plang lint myproject/\n  \
-                    plang format src/ --check\n  \
-                    plang verify myproject/ -t TestName\n  \
-                    plang verify myproject/ --replay bug.prun",
+                    party lint myproject/\n  \
+                    party format src/ --check\n  \
+                    party verify myproject/ -t TestName\n  \
+                    party verify myproject/ --replay bug.prun",
     after_help = "See https://p-org.github.io/P/ for P language documentation."
 )]
 struct Cli {
@@ -65,9 +65,9 @@ enum Command {
     /// the schedule to a .prun file for deterministic replay.
     ///
     /// Examples:
-    ///   plang verify myproject/
-    ///   plang verify myproject/ -t TestSafety
-    ///   plang verify myproject/ --replay bug.prun
+    ///   party verify myproject/
+    ///   party verify myproject/ -t TestSafety
+    ///   party verify myproject/ --replay bug.prun
     Verify {
         /// Directory containing .p files, or a .pproj project file
         path: PathBuf,
@@ -141,12 +141,12 @@ fn main() {
             let start = Instant::now();
             let result = if let Some(ref replay_path) = replay {
                 println!("Replaying schedule from {} ...", replay_path.display());
-                let schedule = plang::checker::trace::Schedule::load(replay_path)
+                let schedule = party::checker::trace::Schedule::load(replay_path)
                     .unwrap_or_else(|e| { eprintln!("Error loading schedule: {e}"); std::process::exit(1); });
-                let mut rt = plang::checker::runtime::Runtime::new(&program.programs);
+                let mut rt = party::checker::runtime::Runtime::new(&program.programs);
                 rt.set_schedule(schedule);
                 let run_result = rt.run();
-                plang::checker::CheckResult {
+                party::checker::CheckResult {
                     ok: run_result.is_ok(),
                     error: run_result.err().map(|e| e.message),
                     trace: rt.tracer.events().to_vec(),
@@ -155,7 +155,7 @@ fn main() {
             } else {
                 println!("Starting model checking ...");
                 println!("  Strategy: {strategy}, Iterations: {iterations}, Max steps: {max_steps}");
-                plang::checker::check_with_trace(&program)
+                party::checker::check_with_trace(&program)
             };
             let elapsed = start.elapsed();
             println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
@@ -190,7 +190,7 @@ fn main() {
                             eprintln!("Warning: could not save schedule: {e}");
                         } else {
                             eprintln!("Schedule saved to: {}", sched_path.display());
-                            eprintln!("Replay with: plang check {} --replay {}", path.display(), sched_path.display());
+                            eprintln!("Replay with: party verify {} --replay {}", path.display(), sched_path.display());
                         }
                     }
                 }
@@ -202,7 +202,7 @@ fn main() {
     }
 }
 
-fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
+fn run_compile(path: &PathBuf) -> party::compiler::CompiledProgram {
     let dir = resolve_project_path(path);
     println!("{SEPARATOR}");
     println!("==== Loading project: {}", dir.display());
@@ -221,7 +221,7 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
     println!("Parsing ...");
     println!("Type checking ...");
     let start = Instant::now();
-    match plang::compiler::compile(&dir) {
+    match party::compiler::compile(&dir) {
         Ok(program) => {
             let elapsed = start.elapsed();
             println!("No errors found.  [done in {:.2}s]", elapsed.as_secs_f64());
@@ -279,14 +279,14 @@ fn run_format(path: &PathBuf, check: bool) {
         });
 
         // Parse
-        let tokens = match plang::compiler::lexer::lex(&source) {
+        let tokens = match party::compiler::lexer::lex(&source) {
             Ok(t) => t,
             Err(e) => {
                 eprintln!("Lex error in {}: {e}", file.display());
                 std::process::exit(1);
             }
         };
-        let mut parser = plang::compiler::parser::Parser::new(tokens, source.clone());
+        let mut parser = party::compiler::parser::Parser::new(tokens, source.clone());
         let program = match parser.parse_program() {
             Ok(p) => p,
             Err(e) => {
@@ -295,7 +295,7 @@ fn run_format(path: &PathBuf, check: bool) {
             }
         };
 
-        let formatted = plang::compiler::formatter::format_program(&program);
+        let formatted = party::compiler::formatter::format_program(&program);
 
         if formatted != source {
             if check {
@@ -347,11 +347,11 @@ fn collect_p_files(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 /// Extract test case names from the compiled program's test declarations.
-fn discover_test_cases(program: &plang::compiler::CompiledProgram) -> Vec<String> {
+fn discover_test_cases(program: &party::compiler::CompiledProgram) -> Vec<String> {
     let mut names = Vec::new();
     for prog in &program.programs {
         for decl in &prog.decls {
-            if let plang::compiler::ast::TopDecl::TestDecl(t) = decl {
+            if let party::compiler::ast::TopDecl::TestDecl(t) = decl {
                 names.push(t.name.clone());
             }
         }

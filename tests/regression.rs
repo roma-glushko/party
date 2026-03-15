@@ -9,19 +9,19 @@ fn run_test(test_dir: &str, expected: Expected) {
 
     match expected {
         Expected::Correct => {
-            let program = plang::compiler::compile(&dir)
+            let program = party::compiler::compile(&dir)
                 .expect("Expected successful compilation but got errors");
-            plang::checker::check(&program)
+            party::checker::check(&program)
                 .expect("Expected model checking to pass but got violation");
         }
         Expected::StaticError => {
-            let result = plang::compiler::compile(&dir);
+            let result = party::compiler::compile(&dir);
             assert!(result.is_err(), "Expected compilation error but program compiled successfully");
         }
         Expected::DynamicError => {
-            let program = plang::compiler::compile(&dir)
+            let program = party::compiler::compile(&dir)
                 .expect("Expected successful compilation (with runtime error) but got compile errors");
-            let result = plang::checker::check(&program);
+            let result = party::checker::check(&program);
             assert!(result.is_err(), "Expected model checking violation but checking passed");
         }
     }

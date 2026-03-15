@@ -1,14 +1,14 @@
 use std::path::Path;
 
 fn compile_and_check(source: &str) -> (bool, Vec<String>) {
-    let tokens = plang::compiler::lexer::lex(source).expect("lex failed");
-    let mut parser = plang::compiler::parser::Parser::new(tokens, source.to_string());
+    let tokens = party::compiler::lexer::lex(source).expect("lex failed");
+    let mut parser = party::compiler::parser::Parser::new(tokens, source.to_string());
     let program = parser.parse_program().expect("parse failed");
     let programs = vec![program];
     // Skip type checking for trace tests — go straight to runtime
-    let compiled = plang::compiler::CompiledProgram { programs };
+    let compiled = party::compiler::CompiledProgram { programs };
 
-    let mut rt = plang::checker::runtime::Runtime::new(&compiled.programs);
+    let mut rt = party::checker::runtime::Runtime::new(&compiled.programs);
     let result = rt.run();
     let trace = rt.get_trace();
     (result.is_ok(), trace)

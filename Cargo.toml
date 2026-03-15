@@ -1,7 +1,8 @@
 [package]
-name = "plang"
+name = "party"
 version = "0.1.0"
 edition = "2024"
+description = "P lAnguage in RusT — formal verification toolchain for distributed systems"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
