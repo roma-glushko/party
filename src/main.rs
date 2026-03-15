@@ -16,6 +16,19 @@ enum Command {
         /// Path to directory or .pproj file containing .p files
         path: PathBuf,
     },
+    /// Format .p source files
+    Format {
+        /// Path to .p file or directory containing .p files
+        path: PathBuf,
+
+        /// Write formatted output back to files (default: print to stdout)
+        #[arg(short = 'w', long = "write")]
+        write: bool,
+
+        /// Check if files are already formatted (exit 1 if not)
+        #[arg(long = "check")]
+        check: bool,
+    },
     /// Compile and run model checking on a P program
     Check {
         /// Path to directory or .pproj file containing .p files
@@ -46,6 +59,9 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Command::Format { path, write, check } => {
+            run_format(&path, write, check);
+        }
         Command::Compile { path } => {
             run_compile(&path);
             println!("\n~~ [PLang]: Thanks for using P! ~~");
@@ -168,6 +184,95 @@ fn resolve_project_path(path: &PathBuf) -> PathBuf {
     } else {
         path.clone()
     }
+}
+
+fn run_format(path: &PathBuf, write: bool, check: bool) {
+    let files = collect_p_files(path);
+    if files.is_empty() {
+        eprintln!("No .p files found at {}", path.display());
+        std::process::exit(1);
+    }
+
+    let mut unformatted = Vec::new();
+
+    for file in &files {
+        let source = std::fs::read_to_string(file).unwrap_or_else(|e| {
+            eprintln!("Error reading {}: {e}", file.display());
+            std::process::exit(1);
+        });
+
+        // Parse
+        let tokens = match plang::compiler::lexer::lex(&source) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("Lex error in {}: {e}", file.display());
+                std::process::exit(1);
+            }
+        };
+        let mut parser = plang::compiler::parser::Parser::new(tokens, source.clone());
+        let program = match parser.parse_program() {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("Parse error in {}: {e}", file.display());
+                std::process::exit(1);
+            }
+        };
+
+        // Format
+        let formatted = plang::compiler::formatter::format_program(&program);
+
+        if check {
+            if formatted != source {
+                unformatted.push(file.clone());
+            }
+        } else if write {
+            if formatted != source {
+                std::fs::write(file, &formatted).unwrap_or_else(|e| {
+                    eprintln!("Error writing {}: {e}", file.display());
+                    std::process::exit(1);
+                });
+                println!("Formatted {}", file.display());
+            } else {
+                println!("Unchanged {}", file.display());
+            }
+        } else {
+            // Print to stdout
+            if files.len() > 1 {
+                println!("// === {} ===", file.display());
+            }
+            print!("{formatted}");
+        }
+    }
+
+    if check {
+        if unformatted.is_empty() {
+            println!("All {} files are formatted.", files.len());
+        } else {
+            eprintln!("The following files need formatting:");
+            for f in &unformatted {
+                eprintln!("  {}", f.display());
+            }
+            std::process::exit(1);
+        }
+    }
+}
+
+fn collect_p_files(path: &PathBuf) -> Vec<PathBuf> {
+    if path.is_file() && path.extension().is_some_and(|e| e == "p") {
+        return vec![path.clone()];
+    }
+    if path.is_dir() {
+        let mut files = Vec::new();
+        for entry in std::fs::read_dir(path).unwrap().flatten() {
+            let p = entry.path();
+            if p.is_file() && p.extension().is_some_and(|e| e == "p") {
+                files.push(p);
+            }
+        }
+        files.sort();
+        return files;
+    }
+    Vec::new()
 }
 
 /// Extract test case names from the compiled program's test declarations.
