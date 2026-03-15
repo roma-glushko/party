@@ -1,4 +1,12 @@
 //! P language formatter. Parses and re-emits .p files with consistent style.
+//!
+//! Style conventions:
+//! - 2-space indentation
+//! - Space before colon in type annotations: `x : int`
+//! - Opening brace on same line, content on next line
+//! - Blank line before event handlers (on/defer/ignore) in states
+//! - Short bodies on one line: `on E do { }`, `entry { x = 0; }`
+//! - Trailing comma in single-field named tuples: `(s = null,)`
 
 use super::ast::*;
 
@@ -7,6 +15,8 @@ pub fn format_program(program: &Program) -> String {
     f.fmt_program(program);
     f.output
 }
+
+const INDENT: &str = "  ";
 
 struct Formatter {
     output: String,
@@ -28,13 +38,11 @@ impl Formatter {
     fn newline(&mut self) {
         self.output.push('\n');
         for _ in 0..self.indent {
-            self.output.push_str("    ");
+            self.push(INDENT);
         }
     }
 
     fn blank_line(&mut self) {
-        // Ensure we have exactly one blank line (two newlines total)
-        // Trim trailing spaces/indentation from current line
         while self.output.ends_with(' ') {
             self.output.pop();
         }
@@ -46,20 +54,36 @@ impl Formatter {
         }
     }
 
+    /// Check if a function body is "short" enough to render on one line.
+    /// Only truly trivial bodies: empty, or a single very short statement.
+    fn is_short_body(body: &FunctionBody) -> bool {
+        if !body.var_decls.is_empty() { return false; }
+        if body.stmts.is_empty() { return true; }
+        if body.stmts.len() > 1 { return false; }
+        // Single statement — only inline if it's very short (no args)
+        match &body.stmts[0] {
+            Stmt::NoStmt(_) | Stmt::Break(_) | Stmt::Continue(_) => true,
+            Stmt::Return { value: None, .. } => true,
+            Stmt::Assign { .. } => true,
+            _ => false,
+        }
+    }
+
     // ---- Program ----
 
     fn fmt_program(&mut self, prog: &Program) {
         let mut prev_kind = DeclKind::None;
         for decl in &prog.decls {
             let kind = decl_kind(decl);
-            // Blank line between different declaration kinds
-            if prev_kind != DeclKind::None && (kind != prev_kind || matches!(kind, DeclKind::Machine | DeclKind::Spec)) {
+            if prev_kind != DeclKind::None
+                && (kind != prev_kind
+                    || matches!(kind, DeclKind::Machine | DeclKind::Spec))
+            {
                 self.blank_line();
             }
             self.fmt_top_decl(decl);
             prev_kind = kind;
         }
-        // Ensure trailing newline
         if !self.output.ends_with('\n') {
             self.output.push('\n');
         }
@@ -250,9 +274,10 @@ impl Formatter {
         for (i, state) in m.body.states.iter().enumerate() {
             if i > 0 || !m.body.vars.is_empty() {
                 self.blank_line();
+            } else {
+                self.output.push('\n');
             }
-            // Use indent without extra newline after blank_line
-            for _ in 0..self.indent { self.output.push_str("    "); }
+            for _ in 0..self.indent { self.push(INDENT); }
             self.fmt_state(state);
             self.output.push('\n');
         }
@@ -262,12 +287,11 @@ impl Formatter {
             if i > 0 || !m.body.states.is_empty() || !m.body.vars.is_empty() {
                 self.blank_line();
             }
-            for _ in 0..self.indent { self.output.push_str("    "); }
+            for _ in 0..self.indent { self.push(INDENT); }
             self.fmt_fun(fun);
         }
 
         self.indent -= 1;
-        // Close brace — trim trailing blank lines
         while self.output.ends_with("\n\n") {
             self.output.pop();
         }
@@ -296,9 +320,27 @@ impl Formatter {
         self.push(" {");
         self.indent += 1;
 
+        // Separate entry/exit from event handlers with blank lines
+        let mut had_entry_exit = false;
         for item in &s.items {
-            self.newline();
-            self.fmt_state_item(item);
+            let is_handler = matches!(item,
+                StateBodyItem::OnEventDoAction(_) | StateBodyItem::OnEventGotoState(_)
+                | StateBodyItem::Defer(_, _) | StateBodyItem::Ignore(_, _));
+
+            if is_handler && had_entry_exit {
+                // Insert blank line, then indent (no extra newline call)
+                self.blank_line();
+                for _ in 0..self.indent { self.push(INDENT); }
+                self.fmt_state_item(item);
+                had_entry_exit = false;
+            } else {
+                self.newline();
+                self.fmt_state_item(item);
+            }
+
+            if matches!(item, StateBodyItem::Entry(_) | StateBodyItem::Exit(_)) {
+                had_entry_exit = true;
+            }
         }
 
         self.indent -= 1;
@@ -315,15 +357,7 @@ impl Formatter {
                     self.push(fun_name);
                     self.push(";");
                 } else if let Some(handler) = &ee.anon_handler {
-                    if let Some(param) = &handler.param {
-                        self.push(" (");
-                        self.push(&param.name);
-                        self.push(": ");
-                        self.fmt_type(&param.ty);
-                        self.push(")");
-                    }
-                    self.push(" ");
-                    self.fmt_function_body(&handler.body);
+                    self.fmt_handler_params_and_body(&handler.param, &handler.body);
                 }
             }
             StateBodyItem::Exit(ee) => {
@@ -334,7 +368,7 @@ impl Formatter {
                     self.push(";");
                 } else if let Some(handler) = &ee.anon_handler {
                     self.push(" ");
-                    self.fmt_function_body(&handler.body);
+                    self.fmt_body_inline_or_block(&handler.body);
                 }
             }
             StateBodyItem::Defer(events, _) => {
@@ -356,15 +390,7 @@ impl Formatter {
                     self.push(fun_name);
                     self.push(";");
                 } else if let Some(handler) = &on.anon_handler {
-                    if let Some(param) = &handler.param {
-                        self.push(" (");
-                        self.push(&param.name);
-                        self.push(": ");
-                        self.fmt_type(&param.ty);
-                        self.push(")");
-                    }
-                    self.push(" ");
-                    self.fmt_function_body(&handler.body);
+                    self.fmt_handler_params_and_body(&handler.param, &handler.body);
                 }
             }
             StateBodyItem::OnEventGotoState(on) => {
@@ -375,22 +401,41 @@ impl Formatter {
                 if let Some(fun_name) = &on.with_fun_name {
                     self.push(" with ");
                     self.push(fun_name);
-                }
-                if let Some(handler) = &on.with_anon_handler {
+                    self.push(";");
+                } else if let Some(handler) = &on.with_anon_handler {
                     self.push(" with");
-                    if let Some(param) = &handler.param {
-                        self.push(" (");
-                        self.push(&param.name);
-                        self.push(": ");
-                        self.fmt_type(&param.ty);
-                        self.push(")");
-                    }
-                    self.push(" ");
-                    self.fmt_function_body(&handler.body);
+                    self.fmt_handler_params_and_body(&handler.param, &handler.body);
                 } else {
                     self.push(";");
                 }
             }
+        }
+    }
+
+    /// Format `(param : type) { body }` — inline if short, block if long.
+    fn fmt_handler_params_and_body(&mut self, param: &Option<FunParam>, body: &FunctionBody) {
+        if let Some(p) = param {
+            self.push(" (");
+            self.push(&p.name);
+            self.push(": ");
+            self.fmt_type(&p.ty);
+            self.push(")");
+        }
+        self.push(" ");
+        self.fmt_body_inline_or_block(body);
+    }
+
+    /// Emit body as `{ stmt; }` on one line if short, or multi-line block otherwise.
+    fn fmt_body_inline_or_block(&mut self, body: &FunctionBody) {
+        if Self::is_short_body(body) {
+            self.push("{ ");
+            for stmt in &body.stmts {
+                self.fmt_stmt(stmt);
+                self.push(" ");
+            }
+            self.push("}");
+        } else {
+            self.fmt_function_body(body);
         }
     }
 
@@ -592,16 +637,8 @@ impl Formatter {
                     self.newline();
                     self.push("case ");
                     self.push(&case.events.join(", "));
-                    self.push(":");
-                    if let Some(param) = &case.handler.param {
-                        self.push(" (");
-                        self.push(&param.name);
-                        self.push(": ");
-                        self.fmt_type(&param.ty);
-                        self.push(")");
-                    }
-                    self.push(" ");
-                    self.fmt_function_body(&case.handler.body);
+                    self.push(" :");
+                    self.fmt_handler_params_and_body(&case.handler.param, &case.handler.body);
                 }
                 self.indent -= 1;
                 self.newline();
@@ -618,19 +655,11 @@ impl Formatter {
             Expr::IntLit(v, _) => self.push(&v.to_string()),
             Expr::FloatLit(v, _) => {
                 let s = format!("{v}");
-                if s.contains('.') {
-                    self.push(&s);
-                } else {
-                    let s2 = format!("{v}.0");
-                    self.push(&s2);
-                }
+                if s.contains('.') { self.push(&s); }
+                else { let s2 = format!("{v}.0"); self.push(&s2); }
             }
             Expr::BoolLit(v, _) => self.push(if *v { "true" } else { "false" }),
-            Expr::StringLit(s, _) => {
-                self.push("\"");
-                self.push(s);
-                self.push("\"");
-            }
+            Expr::StringLit(s, _) => { self.push("\""); self.push(s); self.push("\""); }
             Expr::NullLit(_) => self.push("null"),
             Expr::This(_) => self.push("this"),
             Expr::HaltEvent(_) => self.push("halt"),
@@ -671,26 +700,10 @@ impl Formatter {
                 self.fmt_expr(index);
                 self.push("]");
             }
-            Expr::Keys(inner, _) => {
-                self.push("keys(");
-                self.fmt_expr(inner);
-                self.push(")");
-            }
-            Expr::Values(inner, _) => {
-                self.push("values(");
-                self.fmt_expr(inner);
-                self.push(")");
-            }
-            Expr::Sizeof(inner, _) => {
-                self.push("sizeof(");
-                self.fmt_expr(inner);
-                self.push(")");
-            }
-            Expr::Default(ty, _) => {
-                self.push("default(");
-                self.fmt_type(ty);
-                self.push(")");
-            }
+            Expr::Keys(inner, _) => { self.push("keys("); self.fmt_expr(inner); self.push(")"); }
+            Expr::Values(inner, _) => { self.push("values("); self.fmt_expr(inner); self.push(")"); }
+            Expr::Sizeof(inner, _) => { self.push("sizeof("); self.fmt_expr(inner); self.push(")"); }
+            Expr::Default(ty, _) => { self.push("default("); self.fmt_type(ty); self.push(")"); }
             Expr::New(name, args, _) => {
                 self.push("new ");
                 self.push(name);
@@ -704,30 +717,17 @@ impl Formatter {
                 self.fmt_expr_list(args);
                 self.push(")");
             }
-            Expr::Neg(inner, _) => {
-                self.push("-");
-                self.fmt_expr(inner);
-            }
-            Expr::Not(inner, _) => {
-                self.push("!");
-                self.fmt_expr(inner);
-            }
+            Expr::Neg(inner, _) => { self.push("-"); self.fmt_expr(inner); }
+            Expr::Not(inner, _) => { self.push("!"); self.fmt_expr(inner); }
             Expr::BinOp(op, lhs, rhs, _) => {
                 self.fmt_expr(lhs);
                 self.push(match op {
-                    BinOp::Add => " + ",
-                    BinOp::Sub => " - ",
-                    BinOp::Mul => " * ",
-                    BinOp::Div => " / ",
-                    BinOp::Mod => " % ",
-                    BinOp::Eq => " == ",
-                    BinOp::Ne => " != ",
-                    BinOp::Lt => " < ",
-                    BinOp::Gt => " > ",
-                    BinOp::Le => " <= ",
-                    BinOp::Ge => " >= ",
-                    BinOp::And => " && ",
-                    BinOp::Or => " || ",
+                    BinOp::Add => " + ", BinOp::Sub => " - ",
+                    BinOp::Mul => " * ", BinOp::Div => " / ", BinOp::Mod => " % ",
+                    BinOp::Eq => " == ", BinOp::Ne => " != ",
+                    BinOp::Lt => " < ", BinOp::Gt => " > ",
+                    BinOp::Le => " <= ", BinOp::Ge => " >= ",
+                    BinOp::And => " && ", BinOp::Or => " || ",
                     BinOp::In => " in ",
                 });
                 self.fmt_expr(rhs);
@@ -739,19 +739,14 @@ impl Formatter {
             }
             Expr::Choose(arg, _) => {
                 self.push("choose(");
-                if let Some(a) = arg {
-                    self.fmt_expr(a);
-                }
+                if let Some(a) = arg { self.fmt_expr(a); }
                 self.push(")");
             }
             Expr::FormatString(fmt, args, _) => {
                 self.push("format(\"");
                 self.push(fmt);
                 self.push("\"");
-                for a in args {
-                    self.push(", ");
-                    self.fmt_expr(a);
-                }
+                for a in args { self.push(", "); self.fmt_expr(a); }
                 self.push(")");
             }
             Expr::Paren(inner, _) => {
@@ -773,19 +768,13 @@ impl Formatter {
         match lv {
             LValue::Var(name, _) => self.push(name),
             LValue::NamedTupleField(base, field, _) => {
-                self.fmt_lvalue(base);
-                self.push(".");
-                self.push(field);
+                self.fmt_lvalue(base); self.push("."); self.push(field);
             }
             LValue::TupleField(base, idx, _) => {
-                self.fmt_lvalue(base);
-                self.push(&format!(".{idx}"));
+                self.fmt_lvalue(base); self.push(&format!(".{idx}"));
             }
             LValue::Index(base, index, _) => {
-                self.fmt_lvalue(base);
-                self.push("[");
-                self.fmt_expr(index);
-                self.push("]");
+                self.fmt_lvalue(base); self.push("["); self.fmt_expr(index); self.push("]");
             }
         }
     }
@@ -794,11 +783,7 @@ impl Formatter {
 
     fn fmt_mod_expr(&mut self, expr: &ModExpr) {
         match expr {
-            ModExpr::Paren(inner) => {
-                self.push("(");
-                self.fmt_mod_expr(inner);
-                self.push(")");
-            }
+            ModExpr::Paren(inner) => { self.push("("); self.fmt_mod_expr(inner); self.push(")"); }
             ModExpr::Primitive(binds) => {
                 self.push("{ ");
                 for (i, b) in binds.iter().enumerate() {
@@ -827,36 +812,25 @@ impl Formatter {
                 }
             }
             ModExpr::HideEvents(events, inner) => {
-                self.push("hidee ");
-                self.push(&events.join(", "));
-                self.push(" in ");
-                self.fmt_mod_expr(inner);
+                self.push("hidee "); self.push(&events.join(", "));
+                self.push(" in "); self.fmt_mod_expr(inner);
             }
             ModExpr::HideInterfaces(ifaces, inner) => {
-                self.push("hidei ");
-                self.push(&ifaces.join(", "));
-                self.push(" in ");
-                self.fmt_mod_expr(inner);
+                self.push("hidei "); self.push(&ifaces.join(", "));
+                self.push(" in "); self.fmt_mod_expr(inner);
             }
             ModExpr::AssertMod(monitors, inner) => {
-                self.push("assert ");
-                self.push(&monitors.join(", "));
-                self.push(" in ");
-                self.fmt_mod_expr(inner);
+                self.push("assert "); self.push(&monitors.join(", "));
+                self.push(" in "); self.fmt_mod_expr(inner);
             }
             ModExpr::Rename(old, new, inner) => {
-                self.push("rename ");
-                self.push(old);
-                self.push(" to ");
-                self.push(new);
-                self.push(" in ");
-                self.fmt_mod_expr(inner);
+                self.push("rename "); self.push(old);
+                self.push(" to "); self.push(new);
+                self.push(" in "); self.fmt_mod_expr(inner);
             }
             ModExpr::MainMachine(machine, inner) => {
-                self.push("main ");
-                self.push(machine);
-                self.push(" in ");
-                self.fmt_mod_expr(inner);
+                self.push("main "); self.push(machine);
+                self.push(" in "); self.fmt_mod_expr(inner);
             }
         }
     }
@@ -899,19 +873,8 @@ impl Formatter {
     }
 }
 
-// ---- Helpers ----
-
 #[derive(PartialEq, Clone, Copy)]
-enum DeclKind {
-    None,
-    Type,
-    Event,
-    Machine,
-    Spec,
-    Fun,
-    Module,
-    Other,
-}
+enum DeclKind { None, Type, Event, Machine, Spec, Fun, Module, Other }
 
 fn decl_kind(decl: &TopDecl) -> DeclKind {
     match decl {
