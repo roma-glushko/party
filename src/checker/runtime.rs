@@ -182,7 +182,7 @@ impl Runtime {
         let main_machine = self.find_main_machine()
             .ok_or_else(|| CheckError { message: "no main machine found".to_string() })?;
 
-        // Create the main machine instance
+        // Create the main machine instance first (id=0 for consistent machine refs)
         self.create_machine(&main_machine, None)?;
 
         // Create spec machines (monitors)
@@ -737,9 +737,12 @@ impl Runtime {
                 match &mut target {
                     PValue::Seq(seq) => {
                         let i = idx.as_int().unwrap_or(0) as usize;
-                        if i <= seq.len() {
-                            seq.insert(i, val);
+                        if i > seq.len() {
+                            return Err(CheckError {
+                                message: format!("index out of bounds: inserting at index {i} in sequence of size {}", seq.len()),
+                            });
                         }
+                        seq.insert(i, val);
                     }
                     PValue::Map(map) => {
                         map.insert(idx, val);
@@ -940,8 +943,11 @@ impl Runtime {
             }
             Stmt::Announce { event, args, .. } => {
                 let ev = self.eval_expr(id, machine, event, env)?;
-                let event_name = if let Expr::Iden(name, _) = event { name.clone() }
-                    else { format!("{ev}") };
+                let event_name = match &ev {
+                    PValue::EventId(name) => name.clone(),
+                    _ => if let Expr::Iden(name, _) = event { name.clone() }
+                         else { format!("{ev}") },
+                };
                 let payload = if !args.is_empty() {
                     let mut vals = Vec::new();
                     for a in args { vals.push(self.eval_expr(id, machine, a, env)?); }
