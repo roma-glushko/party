@@ -1,15 +1,33 @@
 pub mod runtime;
 pub mod scheduler;
+pub mod trace;
 pub mod value;
 
 use crate::compiler::CompiledProgram;
 
+/// Result of model checking, including trace on failure.
+pub struct CheckResult {
+    pub ok: bool,
+    pub error: Option<String>,
+    pub trace: Vec<trace::TraceEvent>,
+}
+
 /// Run model checking on a compiled P program.
 /// Uses a combination of DFS systematic exploration and random scheduling.
 pub fn check(program: &CompiledProgram) -> Result<(), String> {
+    let result = check_with_trace(program);
+    if result.ok {
+        Ok(())
+    } else {
+        Err(result.error.unwrap_or_default())
+    }
+}
+
+/// Run model checking and return structured result with trace.
+pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
     let _ = env_logger::try_init();
 
-    // Phase 1: DFS systematic exploration (finds most bugs deterministically)
+    // Phase 1: DFS systematic exploration
     let max_dfs_iterations = 100;
     let mut dfs = scheduler::DfsScheduler::new(500);
 
@@ -17,7 +35,11 @@ pub fn check(program: &CompiledProgram) -> Result<(), String> {
         let mut rt = runtime::Runtime::new(&program.programs);
         rt.set_dfs_scheduler(dfs);
         if let Err(e) = rt.run() {
-            return Err(e.message);
+            return CheckResult {
+                ok: false,
+                error: Some(e.message),
+                trace: rt.tracer.events().to_vec(),
+            };
         }
         dfs = rt.take_dfs_scheduler().unwrap();
 
@@ -27,7 +49,7 @@ pub fn check(program: &CompiledProgram) -> Result<(), String> {
         }
     }
 
-    // Phase 2: Random iterations with bias (catches scheduling-sensitive bugs)
+    // Phase 2: Random iterations with bias
     for i in 0..10 {
         let mut rt = runtime::Runtime::new(&program.programs);
         rt.set_nondet_bias(match i % 4 {
@@ -36,9 +58,17 @@ pub fn check(program: &CompiledProgram) -> Result<(), String> {
             _ => None,
         });
         if let Err(e) = rt.run() {
-            return Err(e.message);
+            return CheckResult {
+                ok: false,
+                error: Some(e.message),
+                trace: rt.tracer.events().to_vec(),
+            };
         }
     }
 
-    Ok(())
+    CheckResult {
+        ok: true,
+        error: None,
+        trace: Vec::new(),
+    }
 }

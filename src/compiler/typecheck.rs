@@ -1255,7 +1255,7 @@ impl<'a> TypeChecker<'a> {
                     let ev_exists = self.events.contains_key(name);
                     if ev_exists {
                         match (&ev_payload, send_arg_types.len()) {
-                            (Some(expected), 0) => {
+                            (Some(_expected), 0) => {
                                 self.err(format!("event '{name}' requires a payload but send provides none"), *span);
                             }
                             (None, n) if n > 0 => {

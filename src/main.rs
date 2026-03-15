@@ -60,7 +60,6 @@ fn main() {
         }
         Command::Compile { path } => {
             run_compile(&path);
-            println!("\n~~ [PLang]: Thanks for using P! ~~");
         }
         Command::Check { path, testcase, iterations, max_steps, strategy } => {
             let program = run_compile(&path);
@@ -86,8 +85,7 @@ fn main() {
                 for tc in &test_cases {
                     println!("  {tc}");
                 }
-                println!("\n~~ [PLang]: Thanks for using P! ~~");
-                std::process::exit(1);
+                    std::process::exit(1);
             }
 
             let start = Instant::now();
@@ -96,24 +94,36 @@ fn main() {
                 "  Strategy: {strategy}, Iterations: {iterations}, Max steps: {max_steps}"
             );
 
-            match plang::checker::check(&program) {
-                Ok(()) => {
-                    let elapsed = start.elapsed();
-                    println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
-                    println!("... Found 0 bugs.");
-                }
-                Err(msg) => {
-                    let elapsed = start.elapsed();
-                    println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
-                    eprintln!("... Found a bug.");
+            let result = plang::checker::check_with_trace(&program);
+            let elapsed = start.elapsed();
+            println!("... Model checking completed in {:.2}s", elapsed.as_secs_f64());
+            if result.ok {
+                println!("... Found 0 bugs.");
+            } else {
+                eprintln!("... Found a bug.");
+                if let Some(ref msg) = result.error {
                     eprintln!("Error: {msg}");
-                    println!("{SEPARATOR}");
-                    println!("\n~~ [PLang]: Thanks for using P! ~~");
-                    std::process::exit(1);
                 }
+                // Print execution trace for debugging
+                if !result.trace.is_empty() {
+                    eprintln!();
+                    let trace_len = result.trace.len();
+                    let show = 30;
+                    let start_idx = if trace_len > show { trace_len - show } else { 0 };
+                    eprintln!("=== Counterexample Trace (last {} of {} steps) ===",
+                        trace_len - start_idx, trace_len);
+                    if start_idx > 0 {
+                        eprintln!("  ... ({start_idx} earlier steps omitted)");
+                    }
+                    for event in &result.trace[start_idx..] {
+                        eprintln!("  {event}");
+                    }
+                    eprintln!("=== End Trace ===");
+                }
+                println!("{SEPARATOR}");
+                    std::process::exit(1);
             }
             println!("{SEPARATOR}");
-            println!("\n~~ [PLang]: Thanks for using P! ~~");
         }
     }
 }
@@ -140,10 +150,7 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
     match plang::compiler::compile(&dir) {
         Ok(program) => {
             let elapsed = start.elapsed();
-            println!(
-                "Code generation ...  [done in {:.2}s]",
-                elapsed.as_secs_f64()
-            );
+            println!("Compilation successful.  [done in {:.2}s]", elapsed.as_secs_f64());
             println!("{SEPARATOR}");
             program
         }
@@ -152,7 +159,6 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
                 eprintln!("error: {e}");
             }
             println!("{SEPARATOR}");
-            println!("\n~~ [PLang]: Thanks for using P! ~~");
             std::process::exit(1);
         }
     }

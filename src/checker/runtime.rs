@@ -91,6 +91,8 @@ pub struct Runtime {
     last_atomic_state: Option<(usize, String)>,
     /// How many times the same (machine, state) pair repeated in a row.
     same_state_count: usize,
+    /// Structured execution trace for counterexample reporting.
+    pub tracer: super::trace::Tracer,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -136,6 +138,7 @@ impl Runtime {
             atomic_steps: 0,
             last_atomic_state: None,
             same_state_count: 0,
+            tracer: super::trace::Tracer::new(),
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -179,7 +182,7 @@ impl Runtime {
                     TopDecl::ModuleDecl(m) => {
                         rt.named_modules.insert(m.name.clone(), m.expr.clone());
                     }
-                    TopDecl::ImplementationDecl(impl_decl) => {
+                    TopDecl::ImplementationDecl(_impl_decl) => {
                         // Extract interface-to-machine bindings (deferred to second pass)
                     }
                     TopDecl::TestDecl(test_decl) => {
@@ -469,6 +472,11 @@ impl Runtime {
         false
     }
 
+    /// Get the execution trace as formatted strings.
+    pub fn get_trace(&self) -> Vec<String> {
+        self.tracer.to_strings()
+    }
+
     fn find_main_machine(&self) -> Option<String> {
         // First check if there's a machine called "Main"
         if self.machines.contains_key("Main") {
@@ -498,7 +506,13 @@ impl Runtime {
             .find(|s| s.is_start)
             .ok_or_else(|| CheckError { message: format!("machine '{name}' has no start state") })?
             .name.clone();
-        debug!("create_machine '{}' id={} start_state={}", name, self.instances.len(), start_state);
+        let new_id = self.instances.len();
+        debug!("create_machine '{}' id={} start_state={}", resolved_name, new_id, start_state);
+        self.tracer.record(
+            super::trace::TraceKind::CreateMachine,
+            &resolved_name, new_id, &start_state,
+            format!("new {}({})", resolved_name, if payload.is_some() { "..." } else { "" }),
+        );
 
         // Initialize fields with defaults
         let mut fields = HashMap::new();
@@ -547,7 +561,7 @@ impl Runtime {
         let (event_name, payload) = match event {
             Some((ref ev, _)) if self.is_deferred(id, ev) => {
                 // Event is deferred — put it back and check for null handler
-                let ep = self.instances[id].event_queue.pop_front();
+                let _ep = self.instances[id].event_queue.pop_front();
                 // Actually we already popped it. Put back the original.
                 // Re-insert at back
                 let (ev_name, ev_payload) = event.unwrap();
@@ -697,6 +711,11 @@ impl Runtime {
             return Ok(());
         }
         // For regular machines, unhandled events cause a runtime error
+        self.tracer.record(
+            super::trace::TraceKind::UnhandledEvent,
+            &machine_name, id, &current_state,
+            format!("unhandled event '{}'", event_name),
+        );
         Err(CheckError {
             message: format!(
                 "unhandled event '{}' in state '{}' of machine '{}'",
@@ -788,7 +807,13 @@ impl Runtime {
             }
             return Ok(());
         }
-        debug!("transition {}[{}] -> {}", self.instances[id].machine_name, self.instances[id].current_state, target);
+        let from_state = self.instances[id].current_state.clone();
+        debug!("transition {}[{}] -> {}", self.instances[id].machine_name, from_state, target);
+        self.tracer.record(
+            super::trace::TraceKind::StateTransition,
+            &self.instances[id].machine_name, id, &from_state,
+            target.to_string(),
+        );
         self.run_exit_handler(id)?;
         self.instances[id].current_state = target.to_string();
         let machine_name = self.instances[id].machine_name.clone();
@@ -847,6 +872,11 @@ impl Runtime {
                 }
                 debug!("raise '{}' in machine {}[{}] state={}",
                     event, self.instances[id].machine_name, id, self.instances[id].current_state);
+                self.tracer.record(
+                    super::trace::TraceKind::RaiseEvent,
+                    &self.instances[id].machine_name, id, &self.instances[id].current_state,
+                    format!("raise {}", event),
+                );
                 if event == "halt" {
                     // Check if there's a handler for halt in the current state
                     // before actually halting
@@ -995,6 +1025,11 @@ impl Runtime {
                     } else {
                         format!("Assertion failed: {:?}", expr)
                     };
+                    self.tracer.record(
+                        super::trace::TraceKind::AssertionFailed,
+                        &self.instances[id].machine_name, id, &self.instances[id].current_state,
+                        &msg,
+                    );
                     return Err(CheckError { message: msg });
                 }
                 Ok(HandlerOutcome::Normal)
@@ -1227,6 +1262,11 @@ impl Runtime {
                 // Enqueue on target
                 if target_id < self.instances.len() && !self.instances[target_id].halted {
                     debug!("send {} -> {}[{}] event={}", self.instances[id].machine_name, self.instances[target_id].machine_name, target_id, event_name);
+                    self.tracer.record(
+                        super::trace::TraceKind::SendEvent,
+                        &self.instances[id].machine_name, id, &self.instances[id].current_state,
+                        format!("{} -> {}#{}", event_name, self.instances[target_id].machine_name, target_id),
+                    );
                     self.instances[target_id].event_queue.push_back((event_name, payload));
                 }
                 Ok(HandlerOutcome::Normal)
