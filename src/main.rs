@@ -136,14 +136,16 @@ fn main() {
                     }
                     eprintln!("=== End Trace ===");
                 }
-                // Save schedule for replay
-                if let Some(ref sched) = result.schedule {
-                    let sched_path = path.with_extension("prun");
-                    if let Err(e) = sched.save(&sched_path) {
-                        eprintln!("Warning: could not save schedule: {e}");
-                    } else {
-                        eprintln!("Schedule saved to: {}", sched_path.display());
-                        eprintln!("Replay with: plang check {} --replay {}", path.display(), sched_path.display());
+                // Save schedule for replay (skip if already replaying)
+                if replay.is_none() {
+                    if let Some(ref sched) = result.schedule {
+                        let sched_path = path.with_extension("prun");
+                        if let Err(e) = sched.save(&sched_path) {
+                            eprintln!("Warning: could not save schedule: {e}");
+                        } else {
+                            eprintln!("Schedule saved to: {}", sched_path.display());
+                            eprintln!("Replay with: plang check {} --replay {}", path.display(), sched_path.display());
+                        }
                     }
                 }
                 println!("{SEPARATOR}");
