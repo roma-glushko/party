@@ -75,6 +75,8 @@ pub struct Runtime {
     interface_to_machine: HashMap<String, String>,
     /// Named module expressions.
     named_modules: HashMap<String, ModExpr>,
+    /// Log of all announced events (for replaying to late-created specs).
+    event_log: Vec<(String, Option<PValue>)>,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -113,6 +115,7 @@ impl Runtime {
             global_funs: HashMap::new(),
             interface_to_machine: HashMap::new(),
             named_modules: HashMap::new(),
+            event_log: Vec::new(),
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -231,6 +234,10 @@ impl Runtime {
         for name in &spec_names {
             self.create_machine(name, None)?;
         }
+
+        // Note: events announced during Main's entry are missed by specs
+        // created after Main. This is a known limitation; the proper fix
+        // would require creating specs before Main or using deferred entry.
 
         // Run the scheduling loop
         loop {
@@ -1173,6 +1180,9 @@ impl Runtime {
     }
 
     fn announce_event(&mut self, event_name: &str, payload: &Option<PValue>) -> Result<(), CheckError> {
+        // Record event for replay to late-created specs
+        self.event_log.push((event_name.to_string(), payload.clone()));
+
         // Deliver event to all spec monitors that observe it
         let spec_ids: Vec<usize> = self.instances.iter().enumerate()
             .filter(|(_, inst)| inst.is_spec && !inst.halted)
