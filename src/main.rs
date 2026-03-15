@@ -16,16 +16,12 @@ enum Command {
         /// Path to directory or .pproj file containing .p files
         path: PathBuf,
     },
-    /// Format .p source files
+    /// Format .p source files (writes in place by default)
     Format {
         /// Path to .p file or directory containing .p files
         path: PathBuf,
 
-        /// Write formatted output back to files (default: print to stdout)
-        #[arg(short = 'w', long = "write")]
-        write: bool,
-
-        /// Check if files are already formatted (exit 1 if not)
+        /// Only check formatting without modifying files (exit 1 if unformatted)
         #[arg(long = "check")]
         check: bool,
     },
@@ -59,8 +55,8 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Format { path, write, check } => {
-            run_format(&path, write, check);
+        Command::Format { path, check } => {
+            run_format(&path, check);
         }
         Command::Compile { path } => {
             run_compile(&path);
@@ -186,7 +182,7 @@ fn resolve_project_path(path: &PathBuf) -> PathBuf {
     }
 }
 
-fn run_format(path: &PathBuf, write: bool, check: bool) {
+fn run_format(path: &PathBuf, check: bool) {
     let files = collect_p_files(path);
     if files.is_empty() {
         eprintln!("No .p files found at {}", path.display());
@@ -194,6 +190,7 @@ fn run_format(path: &PathBuf, write: bool, check: bool) {
     }
 
     let mut unformatted = Vec::new();
+    let mut formatted_count = 0;
 
     for file in &files {
         let source = std::fs::read_to_string(file).unwrap_or_else(|e| {
@@ -218,29 +215,19 @@ fn run_format(path: &PathBuf, write: bool, check: bool) {
             }
         };
 
-        // Format
         let formatted = plang::compiler::formatter::format_program(&program);
 
-        if check {
-            if formatted != source {
+        if formatted != source {
+            if check {
                 unformatted.push(file.clone());
-            }
-        } else if write {
-            if formatted != source {
+            } else {
                 std::fs::write(file, &formatted).unwrap_or_else(|e| {
                     eprintln!("Error writing {}: {e}", file.display());
                     std::process::exit(1);
                 });
                 println!("Formatted {}", file.display());
-            } else {
-                println!("Unchanged {}", file.display());
+                formatted_count += 1;
             }
-        } else {
-            // Print to stdout
-            if files.len() > 1 {
-                println!("// === {} ===", file.display());
-            }
-            print!("{formatted}");
         }
     }
 
@@ -254,6 +241,10 @@ fn run_format(path: &PathBuf, write: bool, check: bool) {
             }
             std::process::exit(1);
         }
+    } else if formatted_count == 0 {
+        println!("All {} files already formatted.", files.len());
+    } else {
+        println!("Formatted {} of {} files.", formatted_count, files.len());
     }
 }
 
