@@ -82,6 +82,8 @@ struct TypeChecker<'a> {
     typedefs: HashMap<String, PResolvedType>,
     interfaces: HashMap<String, Option<PResolvedType>>,
     event_sets: HashMap<String, Vec<String>>,
+    /// Global function ASTs for purity analysis.
+    global_funs_ast: HashMap<String, FunDecl>,
 }
 
 impl<'a> TypeChecker<'a> {
@@ -97,6 +99,7 @@ impl<'a> TypeChecker<'a> {
             typedefs: HashMap::new(),
             interfaces: HashMap::new(),
             event_sets: HashMap::new(),
+            global_funs_ast: HashMap::new(),
         };
 
         // Built-in events
@@ -211,6 +214,7 @@ impl<'a> TypeChecker<'a> {
             }
             TopDecl::FunDecl(f) => {
                 self.register_function(f, None);
+                self.global_funs_ast.insert(f.name.clone(), f.clone());
             }
             TopDecl::GlobalParamDecl(_) | TopDecl::ModuleDecl(_) | TopDecl::TestDecl(_) | TopDecl::ImplementationDecl(_) => {
                 // Handled elsewhere or skipped
@@ -1468,7 +1472,8 @@ impl<'a> TypeChecker<'a> {
         locals: &HashMap<String, PResolvedType>,
     ) -> PResolvedType {
         match lv {
-            LValue::Var(name, _) => {
+            LValue::Var(name, span) => {
+                // Check if name is a local variable or field first (shadows events)
                 if let Some(ty) = locals.get(name) {
                     return ty.clone();
                 }
@@ -1478,6 +1483,10 @@ impl<'a> TypeChecker<'a> {
                             return ty.clone();
                         }
                     }
+                }
+                // If not a local/field, check if it's an event (cannot assign to events)
+                if self.events.contains_key(name) {
+                    self.err(format!("cannot assign to event '{name}'"), *span);
                 }
                 PResolvedType::Any
             }
@@ -1712,6 +1721,14 @@ impl<'a> TypeChecker<'a> {
             }
             Stmt::While { body, .. } | Stmt::Foreach { body, .. } => {
                 self.check_spec_stmt(body, machine, context);
+            }
+            Stmt::FunCall { name, span, .. } => {
+                // Check if the called function contains forbidden operations
+                if let Some(fun) = self.global_funs_ast.get(name).cloned() {
+                    if let Some(body) = &fun.body {
+                        self.check_spec_purity(body, machine, &format!("function '{name}' called from {context}"));
+                    }
+                }
             }
             _ => {}
         }

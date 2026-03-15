@@ -1554,7 +1554,12 @@ impl Runtime {
                 match &mut parent {
                     PValue::Seq(seq) => {
                         let i = idx.as_int().unwrap_or(0) as usize;
-                        if i < seq.len() { seq[i] = val; }
+                        if i >= seq.len() {
+                            return Err(CheckError {
+                                message: format!("index out of bounds: assigning index {i} in sequence of size {}", seq.len()),
+                            });
+                        }
+                        seq[i] = val;
                     }
                     PValue::Map(map) => { map.insert(idx, val); }
                     _ => {}
