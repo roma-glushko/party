@@ -71,6 +71,10 @@ pub struct Runtime {
     typedefs: HashMap<String, PType>,
     /// Global functions (not in any machine).
     global_funs: HashMap<String, FunDecl>,
+    /// Interface name -> implementing machine name.
+    interface_to_machine: HashMap<String, String>,
+    /// Named module expressions.
+    named_modules: HashMap<String, ModExpr>,
     /// Machine instances.
     instances: Vec<MachineInstance>,
     /// RNG for nondeterministic choices.
@@ -107,6 +111,8 @@ impl Runtime {
             enum_values: HashMap::new(),
             typedefs: HashMap::new(),
             global_funs: HashMap::new(),
+            interface_to_machine: HashMap::new(),
+            named_modules: HashMap::new(),
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
@@ -146,6 +152,32 @@ impl Runtime {
                     }
                     TopDecl::FunDecl(f) => {
                         rt.global_funs.insert(f.name.clone(), f.clone());
+                    }
+                    TopDecl::ModuleDecl(m) => {
+                        rt.named_modules.insert(m.name.clone(), m.expr.clone());
+                    }
+                    TopDecl::ImplementationDecl(impl_decl) => {
+                        // Extract interface-to-machine bindings (deferred to second pass)
+                    }
+                    TopDecl::TestDecl(_) => {
+                        // Extract interface-to-machine bindings (deferred to second pass)
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        // Second pass: extract interface-to-machine bindings
+        // (needs named_modules to be populated first)
+        let modules = rt.named_modules.clone();
+        for prog in programs {
+            for decl in &prog.decls {
+                match decl {
+                    TopDecl::ImplementationDecl(impl_decl) => {
+                        Self::extract_bindings_with_modules(&impl_decl.module_expr, &mut rt.interface_to_machine, &modules);
+                    }
+                    TopDecl::TestDecl(test_decl) => {
+                        Self::extract_bindings_with_modules(&test_decl.module_expr, &mut rt.interface_to_machine, &modules);
                     }
                     _ => {}
                 }
@@ -316,6 +348,34 @@ impl Runtime {
         Ok(())
     }
 
+    /// Extract interface-to-machine bindings from module expressions, resolving named modules.
+    fn extract_bindings_with_modules(expr: &ModExpr, map: &mut HashMap<String, String>, modules: &HashMap<String, ModExpr>) {
+        match expr {
+            ModExpr::Primitive(binds) => {
+                for bind in binds {
+                    if let Some(iface) = &bind.interface {
+                        map.insert(iface.clone(), bind.machine.clone());
+                    }
+                }
+            }
+            ModExpr::Paren(inner) | ModExpr::HideEvents(_, inner) | ModExpr::HideInterfaces(_, inner)
+            | ModExpr::AssertMod(_, inner) | ModExpr::Rename(_, _, inner) | ModExpr::MainMachine(_, inner) => {
+                Self::extract_bindings_with_modules(inner, map, modules);
+            }
+            ModExpr::Compose(exprs) | ModExpr::Union(exprs) => {
+                for e in exprs {
+                    Self::extract_bindings_with_modules(e, map, modules);
+                }
+            }
+            ModExpr::Named(name) => {
+                // Look up named module and extract its bindings
+                if let Some(mod_expr) = modules.get(name) {
+                    Self::extract_bindings_with_modules(mod_expr, map, modules);
+                }
+            }
+        }
+    }
+
     fn find_main_machine(&self) -> Option<String> {
         // First check if there's a machine called "Main"
         if self.machines.contains_key("Main") {
@@ -328,7 +388,16 @@ impl Runtime {
     }
 
     fn create_machine(&mut self, name: &str, payload: Option<PValue>) -> Result<usize, CheckError> {
-        let machine = self.machines.get(name)
+        // Resolve interface names to implementing machines
+        let resolved_name = if self.machines.contains_key(name) {
+            name.to_string()
+        } else if let Some(impl_name) = self.interface_to_machine.get(name) {
+            debug!("resolved interface '{}' -> machine '{}'", name, impl_name);
+            impl_name.clone()
+        } else {
+            name.to_string()
+        };
+        let machine = self.machines.get(&resolved_name)
             .ok_or_else(|| CheckError { message: format!("unknown machine '{name}'") })?
             .clone();
 
@@ -349,7 +418,7 @@ impl Runtime {
 
         let id = self.instances.len();
         self.instances.push(MachineInstance {
-            machine_name: name.to_string(),
+            machine_name: resolved_name.clone(),
             current_state: start_state.clone(),
             fields,
             event_queue: VecDeque::new(),
