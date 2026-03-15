@@ -3,7 +3,24 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 #[derive(Parser)]
-#[command(name = "plang", about = "P language compiler and model checker")]
+#[command(
+    name = "plang",
+    version,
+    about = "P language toolchain — formal verification for distributed systems",
+    long_about = "PLang is a reimplementation of the P language compiler and model checker.\n\
+                  P is a state-machine based language for modeling and verifying\n\
+                  complex distributed systems.\n\n\
+                  Commands:\n  \
+                    lint    — Check .p files for syntax and type errors\n  \
+                    format  — Auto-format .p source files\n  \
+                    verify  — Run model checking to find concurrency bugs\n\n\
+                  Examples:\n  \
+                    plang lint myproject/\n  \
+                    plang format src/ --check\n  \
+                    plang verify myproject/ -t TestName\n  \
+                    plang verify myproject/ --replay bug.prun",
+    after_help = "See https://p-org.github.io/P/ for P language documentation."
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -11,30 +28,57 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Parse and type-check a P program
+    /// Check .p files for parse errors and type errors.
+    ///
+    /// Runs the parser and type checker on all .p files in the given
+    /// directory. Reports errors with file, line, and column info.
+    /// Exit code 0 if no errors, 1 if errors found.
     Lint {
-        /// Path to directory or .pproj file containing .p files
+        /// Directory containing .p files, or a .pproj project file
         path: PathBuf,
     },
-    /// Format .p source files (writes in place by default)
+
+    /// Auto-format .p source files with consistent style.
+    ///
+    /// By default, formats files in place. Use --check to verify
+    /// formatting without modifying files (useful in CI).
+    ///
+    /// Style: 2-space indent, consistent spacing, blank lines
+    /// between state handlers, short bodies on one line.
     Format {
-        /// Path to .p file or directory containing .p files
+        /// .p file or directory containing .p files
         path: PathBuf,
 
-        /// Only check formatting without modifying files (exit 1 if unformatted)
+        /// Check formatting without modifying files.
+        /// Exit code 0 if all formatted, 1 if changes needed.
         #[arg(long = "check")]
         check: bool,
     },
-    /// Compile and run formal verification on a P program
+
+    /// Run formal verification (model checking) on a P program.
+    ///
+    /// Systematically explores the state space of the program to
+    /// find assertion violations, deadlocks, and liveness bugs.
+    /// Uses DFS exploration followed by randomized scheduling.
+    ///
+    /// On finding a bug, prints a counterexample trace and saves
+    /// the schedule to a .prun file for deterministic replay.
+    ///
+    /// Examples:
+    ///   plang verify myproject/
+    ///   plang verify myproject/ -t TestSafety
+    ///   plang verify myproject/ --replay bug.prun
     Verify {
-        /// Path to directory or .pproj file containing .p files
+        /// Directory containing .p files, or a .pproj project file
         path: PathBuf,
 
-        /// Test case name to check (if multiple test cases exist)
+        /// Name of the test case to verify.
+        /// Required when the program defines multiple test cases.
+        /// Use without this flag to list available test cases.
         #[arg(short = 't', long = "testcase", alias = "tc")]
         testcase: Option<String>,
 
-        /// Number of scheduling iterations
+        /// Number of scheduling iterations to explore
         #[arg(short = 'i', long = "iterations", default_value = "100")]
         iterations: usize,
 
@@ -42,11 +86,13 @@ enum Command {
         #[arg(short = 's', long = "max-steps", default_value = "10000")]
         max_steps: usize,
 
-        /// Scheduling strategy (random, dfs)
+        /// Scheduling strategy: 'random' or 'dfs'
         #[arg(long = "strategy", default_value = "random")]
         strategy: String,
 
-        /// Replay a previously saved schedule (.prun file)
+        /// Replay a saved schedule file (.prun) to reproduce a bug
+        /// deterministically. Schedule files are auto-saved when
+        /// a bug is found.
         #[arg(long = "replay")]
         replay: Option<PathBuf>,
     },
