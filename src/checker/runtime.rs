@@ -81,6 +81,9 @@ pub struct Runtime {
     event_log: Vec<(String, Option<PValue>)>,
     /// Number of spec instances at time of event logging.
     specs_exist: bool,
+    /// Set of (spec_id, event_name) already delivered via replay.
+    /// Used to prevent duplicate delivery in the dequeue-announce path.
+    delivered_to_specs: HashSet<(usize, String)>,
     /// Currently active local variable names that shadow machine fields.
     /// Used to prevent syncing local values back to machine fields.
     active_locals: HashSet<String>,
@@ -143,6 +146,7 @@ impl Runtime {
             named_modules: HashMap::new(),
             event_log: Vec::new(),
             specs_exist: false,
+            delivered_to_specs: HashSet::new(),
             active_locals: HashSet::new(),
             atomic_steps: 0,
             last_atomic_state: None,
@@ -156,7 +160,7 @@ impl Runtime {
             instances: Vec::new(),
             rng: rand::rng(),
             steps: 0,
-            max_steps: 2000,
+            max_steps: 3000,
             liveness_temperature_threshold: 100,
             fair_nondet_counter: 0,
             nondet_bias: None,
@@ -287,6 +291,29 @@ impl Runtime {
         }
         self.specs_exist = true;
 
+        // Replay explicit announce events that had 0 spec recipients.
+        // Only replay if no non-spec machines were created during Main's entry
+        // (simple programs). Complex programs with sub-machines get events via
+        // the dequeue-announce path during scheduling.
+        let non_spec_count = self.instances.iter().filter(|i| !i.is_spec).count();
+        if !self.event_log.is_empty() && non_spec_count <= 1 {
+            let replay = std::mem::take(&mut self.event_log);
+            for (event_name, payload) in &replay {
+                for sid in 0..self.instances.len() {
+                    if !self.instances[sid].is_spec || self.instances[sid].halted { continue; }
+                    let mn = self.instances[sid].machine_name.clone();
+                    if let Some(m) = self.machines.get(&mn) {
+                        if let Some(obs) = &m.observes {
+                            if obs.contains(event_name) {
+                                self.delivered_to_specs.insert((sid, event_name.clone()));
+                                self.instances[sid].event_queue.push_back((event_name.clone(), payload.clone()));
+                                self.step_machine(sid)?;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         self.event_log.clear();
 
         // Run the scheduling loop
@@ -1492,6 +1519,12 @@ impl Runtime {
                 if !observes.contains(&event_name.to_string()) {
                     continue;
                 }
+            }
+
+            // Skip if this event was already delivered via replay
+            let key = (spec_id, event_name.to_string());
+            if self.delivered_to_specs.remove(&key) {
+                continue;
             }
 
             // Enqueue the event on the spec monitor
