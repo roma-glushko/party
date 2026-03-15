@@ -1734,7 +1734,14 @@ impl<'a> TypeChecker<'a> {
                     self.check_spec_stmt(s, machine, context);
                 }
             }
-            Stmt::If { then_branch, else_branch, .. } => {
+            Stmt::If { cond, then_branch, else_branch, span } => {
+                // Check for nondeterminism ($) in spec monitors
+                if self.expr_contains_nondet(cond) {
+                    self.err(
+                        format!("spec machine '{machine}' cannot use nondeterminism (in {context})"),
+                        *span,
+                    );
+                }
                 self.check_spec_stmt(then_branch, machine, context);
                 if let Some(eb) = else_branch {
                     self.check_spec_stmt(eb, machine, context);
@@ -1752,6 +1759,16 @@ impl<'a> TypeChecker<'a> {
                 }
             }
             _ => {}
+        }
+    }
+
+    fn expr_contains_nondet(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Nondet(_) => true,
+            Expr::Choose(_, _) => true,
+            Expr::Paren(inner, _) | Expr::Neg(inner, _) | Expr::Not(inner, _) => self.expr_contains_nondet(inner),
+            Expr::BinOp(_, l, r, _) => self.expr_contains_nondet(l) || self.expr_contains_nondet(r),
+            _ => false,
         }
     }
 }
