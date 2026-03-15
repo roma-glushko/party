@@ -11,8 +11,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Compile a P program
-    Compile {
+    /// Parse and type-check a P program
+    Lint {
         /// Path to directory or .pproj file containing .p files
         path: PathBuf,
     },
@@ -62,7 +62,7 @@ fn main() {
         Command::Format { path, check } => {
             run_format(&path, check);
         }
-        Command::Compile { path } => {
+        Command::Lint { path } => {
             run_compile(&path);
         }
         Command::Verify { path, testcase, iterations, max_steps, strategy, replay } => {
@@ -178,7 +178,7 @@ fn run_compile(path: &PathBuf) -> plang::compiler::CompiledProgram {
     match plang::compiler::compile(&dir) {
         Ok(program) => {
             let elapsed = start.elapsed();
-            println!("Compilation successful.  [done in {:.2}s]", elapsed.as_secs_f64());
+            println!("No errors found.  [done in {:.2}s]", elapsed.as_secs_f64());
             println!("{SEPARATOR}");
             program
         }
