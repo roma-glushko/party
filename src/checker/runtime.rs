@@ -1070,6 +1070,15 @@ impl Runtime {
                 // Block until a matching event arrives.
                 // Process other machines while waiting.
                 for _ in 0..self.max_steps {
+                    // Check for halt event in queue — halt takes priority
+                    if let Some(halt_pos) = self.instances[id].event_queue.iter()
+                        .position(|(ev, _)| ev == "halt")
+                    {
+                        self.instances[id].event_queue.remove(halt_pos);
+                        self.instances[id].halted = true;
+                        return Ok(HandlerOutcome::Normal);
+                    }
+
                     // Check queue for matching event
                     let queue = &self.instances[id].event_queue;
                     let mut found = None;

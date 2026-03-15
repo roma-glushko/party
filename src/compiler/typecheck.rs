@@ -1283,12 +1283,24 @@ impl<'a> TypeChecker<'a> {
                 }
             }
 
-            Expr::SeqMapAccess(base, index, _span) => {
+            Expr::SeqMapAccess(base, index, span) => {
                 let base_ty = self.infer_expr_type(base, ctx, locals);
-                self.infer_expr_type(index, ctx, locals);
+                let idx_ty = self.infer_expr_type(index, ctx, locals);
                 match base_ty.canonicalize() {
-                    PResolvedType::Seq(elem) => *elem,
-                    PResolvedType::Map(_, val) => *val,
+                    PResolvedType::Seq(elem) => {
+                        if idx_ty != PResolvedType::Int && idx_ty != PResolvedType::Any {
+                            self.err(format!("sequence index must be int, got {idx_ty}"), *span);
+                        }
+                        *elem
+                    }
+                    PResolvedType::Map(key, val) => {
+                        if idx_ty != PResolvedType::Any && *key != PResolvedType::Any
+                            && !key.is_assignable_from(&idx_ty)
+                        {
+                            self.err(format!("map key type mismatch: expected {key}, got {idx_ty}"), *span);
+                        }
+                        *val
+                    }
                     PResolvedType::Any => PResolvedType::Any,
                     _ => PResolvedType::Any,
                 }
