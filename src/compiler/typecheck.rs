@@ -987,6 +987,16 @@ impl<'a> TypeChecker<'a> {
                         PResolvedType::Any
                     }
                 };
+                // Check if iterator variable type matches collection element type
+                if let Some(declared_ty) = locals.get(item) {
+                    if *declared_ty != PResolvedType::Any && elem_ty != PResolvedType::Any
+                        && !declared_ty.is_assignable_from(&elem_ty)
+                    {
+                        self.err(format!(
+                            "foreach iterator '{item}' declared as {declared_ty} but collection has element type {elem_ty}"
+                        ), *span);
+                    }
+                }
                 locals.insert(item.clone(), elem_ty);
                 let loop_ctx = FnContext {
                     machine: ctx.machine.clone(),
