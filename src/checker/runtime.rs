@@ -1471,16 +1471,17 @@ impl Runtime {
         self.announce_event_inner(event_name, payload, !self.specs_exist)
     }
 
-    fn announce_event_inner(&mut self, event_name: &str, payload: &Option<PValue>, log: bool) -> Result<(), CheckError> {
-        if log {
-            self.event_log.push((event_name.to_string(), payload.clone()));
-        }
-
+    fn announce_event_inner(&mut self, event_name: &str, payload: &Option<PValue>, explicit: bool) -> Result<(), CheckError> {
         // Deliver event to all spec monitors that observe it
         let spec_ids: Vec<usize> = self.instances.iter().enumerate()
             .filter(|(_, inst)| inst.is_spec && !inst.halted)
             .map(|(i, _)| i)
             .collect();
+
+        // Log explicit announces that had zero recipients (for replay after spec creation)
+        if explicit && spec_ids.is_empty() {
+            self.event_log.push((event_name.to_string(), payload.clone()));
+        }
 
         for spec_id in spec_ids {
             let machine_name = self.instances[spec_id].machine_name.clone();

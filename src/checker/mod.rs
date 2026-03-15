@@ -52,7 +52,7 @@ pub fn check_with_trace(program: &CompiledProgram) -> CheckResult {
     }
 
     // Phase 2: Random iterations with bias
-    for i in 0..10 {
+    for i in 0..30 {
         let mut rt = runtime::Runtime::new(&program.programs);
         rt.set_nondet_bias(match i % 4 {
             1 => Some(true),
