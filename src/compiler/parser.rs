@@ -1793,7 +1793,11 @@ impl Parser {
             && matches!(self.lookahead(2), Some(Token::Wise))
         {
             self.advance(); // (
-            self.advance(); // N
+            let n_tok = self.advance();
+            let n_val: i64 = self.slice_at(n_tok.span).parse().unwrap_or(0);
+            if n_val < 1 {
+                return Err(self.error(format!("invalid wise coverage value: {n_val} (must be >= 1)")));
+            }
             self.advance(); // wise
             self.expect(&Token::RParen)?;
         }
