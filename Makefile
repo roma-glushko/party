@@ -1,7 +1,7 @@
-.PHONY: build release lint test test-all fmt fmt-check clean install help
+.PHONY: build release lint test test-all clean install help
 
 # Default target
-all: fmt-check lint test build
+all: lint test build
 
 # Build debug binary
 build:
@@ -11,9 +11,11 @@ build:
 release:
 	cargo build --release
 
-# Run all lints (Rust code + P examples)
+# Lint everything: format check, clippy, P examples
 lint:
+	cargo fmt -- --check
 	cargo clippy --all-targets -- -D warnings
+	cargo run -q -- format --check examples/raft
 	cargo run -q -- lint examples/raft
 
 # Run regression tests
@@ -23,18 +25,6 @@ test:
 # Run all test suites
 test-all:
 	cargo test
-
-# Format Rust code
-fmt:
-	cargo fmt
-
-# Check Rust formatting (for CI)
-fmt-check:
-	cargo fmt -- --check
-
-# Format P examples
-fmt-p:
-	cargo run -q -- format examples/raft
 
 # Clean build artifacts
 clean:
@@ -54,12 +44,9 @@ help:
 	@echo "Targets:"
 	@echo "  build       Build debug binary"
 	@echo "  release     Build optimized release binary"
-	@echo "  lint        Run clippy and lint P examples"
+	@echo "  lint        Check formatting, run clippy, lint P examples"
 	@echo "  test        Run regression tests (409/412)"
 	@echo "  test-all    Run all test suites (regression + formatter + trace + replay)"
-	@echo "  fmt         Format Rust source code"
-	@echo "  fmt-check   Check Rust formatting (CI)"
-	@echo "  fmt-p       Format P example files"
 	@echo "  clean       Remove build artifacts"
 	@echo "  install     Build release and install to ~/.cargo/bin"
 	@echo "  verify-raft Run model checker on the Raft example"
